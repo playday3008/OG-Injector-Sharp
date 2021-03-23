@@ -15,37 +15,6 @@ namespace OG_Injector_Sharp
 {
 	class WinAPI
 	{
-		[DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "GetModuleHandleW", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
-        public static extern IntPtr GetModuleHandleW(
-			[In, Optional, MarshalAs(UnmanagedType.LPWStr)]
-            string lpModuleName);
-
-		[DllImport("kernel32", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "LoadLibraryW", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
-		public static extern IntPtr LoadLibraryW(
-			[In, MarshalAs(UnmanagedType.LPWStr)]
-            string lpLibFileName);
-
-		[DllImport("kernel32", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi, EntryPoint = "GetProcAddress", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
-		public static extern IntPtr GetProcAddress(
-			[In]
-			IntPtr hModule,
-			[In, MarshalAs(UnmanagedType.LPStr)]
-            string lpProcName);
-
-		[DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi, EntryPoint = "WriteProcessMemory", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		public static extern bool WriteProcessMemory(
-			[In]
-			IntPtr hProcess,
-			[In]
-			IntPtr lpBaseAddress,
-			[In, MarshalAs(UnmanagedType.LPArray)]
-            byte[] lpBuffer,
-			[In, MarshalAs(UnmanagedType.U4)]
-            uint nSize,
-			[Out, Optional, MarshalAs(UnmanagedType.U4)]
-			out uint lpNumberOfBytesWritten);
-
 		[Flags]
 		public enum AllocationType : uint
 		{
@@ -76,7 +45,7 @@ namespace OG_Injector_Sharp
 
 		[Flags]
 		public enum MemoryProtection : uint
-	{
+		{
 			PAGE_NOACCESS = 0x01,
 			PAGE_READONLY = 0x02,
 			PAGE_READWRITE = 0x04,
@@ -106,6 +75,37 @@ namespace OG_Injector_Sharp
 			PAGE_ENCLAVE_SS_FIRST = PAGE_ENCLAVE_MASK | 1,
 			PAGE_ENCLAVE_SS_REST = PAGE_ENCLAVE_MASK | 2
 		}
+
+		[DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "GetModuleHandleW", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
+        public static extern IntPtr GetModuleHandleW(
+			[In, Optional, MarshalAs(UnmanagedType.LPWStr)]
+            string lpModuleName);
+
+		[DllImport("kernel32", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "LoadLibraryW", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
+		public static extern IntPtr LoadLibraryW(
+			[In, MarshalAs(UnmanagedType.LPWStr)]
+            string lpLibFileName);
+
+		[DllImport("kernel32", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi, EntryPoint = "GetProcAddress", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
+		public static extern IntPtr GetProcAddress(
+			[In]
+			IntPtr hModule,
+			[In, MarshalAs(UnmanagedType.LPStr)]
+            string lpProcName);
+
+		[DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi, EntryPoint = "WriteProcessMemory", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool WriteProcessMemory(
+			[In]
+			IntPtr hProcess,
+			[In]
+			IntPtr lpBaseAddress,
+			[In, MarshalAs(UnmanagedType.LPArray)]
+            byte[] lpBuffer,
+			[In, MarshalAs(UnmanagedType.U4)]
+            uint nSize,
+			[Out, Optional, MarshalAs(UnmanagedType.U4)]
+			out uint lpNumberOfBytesWritten);
 
 		[DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi, EntryPoint = "VirtualAllocEx", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
 		public static extern IntPtr VirtualAllocEx(
@@ -180,6 +180,7 @@ namespace OG_Injector_Sharp
 
 		static int Main(string[] args)
 		{
+			Console.OutputEncoding = Encoding.Unicode;
 			Console.ForegroundColor = ConsoleColor.Red;		Console.WriteLine(@"   ____  ______   ____        _           __            "); Thread.Sleep(50);
 			Console.ForegroundColor = ConsoleColor.Green;	Console.WriteLine(@"  / __ \/ ____/  /  _/___    (_)__  _____/ /_____  _____"); Thread.Sleep(50);
 			Console.ForegroundColor = ConsoleColor.Yellow;	Console.WriteLine(@" / / / / / __    / // __ \  / / _ \/ ___/ __/ __ \/ ___/"); Thread.Sleep(50);
