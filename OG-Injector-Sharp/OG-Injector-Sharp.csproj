@@ -1,9 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>OGInjector</RootNamespace>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <StartupObject>OGInjector.Program</StartupObject>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Authors>playday3008</Authors>
+    <Product>OG Injector C#</Product>
+    <Description>Open source injector for CS:GO with Injection Bypass (Windows version (.NET 5.0))</Description>
+    <Copyright>Copyright (C) 2020 PlayDay</Copyright>
+    <PackageProjectUrl>https://github.com/playday3008/OG-Injector-Sharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/playday3008/OG-Injector-Sharp</RepositoryUrl>
+    <PackageTags>injector csgo</PackageTags>
+    <PackageLicenseExpression></PackageLicenseExpression>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryType>git</RepositoryType>
+    <Company>PlayDay</Company>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -20,5 +36,16 @@
     <DebugSymbols>false</DebugSymbols>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>

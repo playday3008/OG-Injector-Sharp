@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
-namespace OG_Injector_Sharp
+namespace OGInjector
 {
     class WinAPI
     {
