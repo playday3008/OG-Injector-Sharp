@@ -21,3 +21,9 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile=OG-Injector-Sharp\Properties\PublishProfiles\Publish.pubxml
+
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: OG-Injector-Sharp
+        path: OG-Injector-Sharp/bin/Release/net5.0/publish/OG-Injector-Sharp.exe
