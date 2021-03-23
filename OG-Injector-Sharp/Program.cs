@@ -322,21 +322,36 @@ namespace OG_Injector_Sharp
 				Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
 				return 1;
 			}
-			uint byteswritten;
-			if (!WinAPI.WriteProcessMemory(processes[^1].Handle, allocatedMem, Encoding.Unicode.GetBytes(dllPath), (uint)((Encoding.Unicode.GetBytes(dllPath).Length + 1) * (Marshal.SizeOf(typeof(char)) * 2)), out byteswritten))
+            if (!WinAPI.WriteProcessMemory(processes[^1].Handle, allocatedMem, Encoding.Unicode.GetBytes(dllPath), (uint)((Encoding.Unicode.GetBytes(dllPath).Length + 1) * (Marshal.SizeOf(typeof(char)) * 2)), out _))
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.Write("Can't write dll path to ");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(processName);
+                Console.ResetColor();
+                Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
+                return 1;
+            }
+			IntPtr kernel32 = WinAPI.GetModuleHandleW("kernel32.dll");
+			if (kernel32 == IntPtr.Zero)
 			{
 				Console.ForegroundColor = ConsoleColor.DarkRed;
-				Console.Write("Can't write dll path to ");
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine(processName);
+				Console.Write("Can't get kernel32.dll handle");
 				Console.ResetColor();
 				Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
 				return 1;
 			}
-			IntPtr loadLibraryAddr = WinAPI.GetProcAddress(WinAPI.GetModuleHandleW("kernel32.dll"), "LoadLibraryW");
-			uint lpThreadId;
-			IntPtr thread = WinAPI.CreateRemoteThread(processes[^1].Handle, IntPtr.Zero, 0, loadLibraryAddr, allocatedMem, 0, out lpThreadId);
-			if (thread == IntPtr.Zero)
+			IntPtr loadLibraryAddr = WinAPI.GetProcAddress(kernel32, "LoadLibraryW");
+			if (loadLibraryAddr == IntPtr.Zero)
+			{
+				Console.ForegroundColor = ConsoleColor.DarkRed;
+				Console.Write("Can't get LoadLibraryW address from kernel32.dll");
+				Console.ResetColor();
+				Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
+				return 1;
+			}
+			IntPtr thread = WinAPI.CreateRemoteThread(processes[^1].Handle, IntPtr.Zero, 0, loadLibraryAddr, allocatedMem, 0, out _);
+            if (thread == IntPtr.Zero)
 			{
 				Console.ForegroundColor = ConsoleColor.DarkRed;
 				Console.Write("Can't create remote thread with LoadLibrary module in ");
