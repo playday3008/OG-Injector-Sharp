@@ -1,4 +1,8 @@
-﻿using System;
+﻿//#define OSIRIS
+//#define GOESP
+//#define BETA
+
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -174,10 +178,6 @@ namespace OGInjector
 
         static int Main(string[] args)
         {
-            //#define OSIRIS
-            //#define GOESP
-            //#define BETA
-
             Console.OutputEncoding = Encoding.Unicode;
             Console.ForegroundColor = ConsoleColor.Red;     Console.WriteLine(@"   ____  ______   ____        _           __            "); Thread.Sleep(50);
             Console.ForegroundColor = ConsoleColor.Green;   Console.WriteLine(@"  / __ \/ ____/  /  _/___    (_)__  _____/ /_____  _____"); Thread.Sleep(50);
