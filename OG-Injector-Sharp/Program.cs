@@ -16,25 +16,35 @@ namespace OG_Injector_Sharp
 	class WinAPI
 	{
 		[DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "GetModuleHandleW", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
-		public static extern IntPtr GetModuleHandleW(
-			[MarshalAs(UnmanagedType.LPWStr)] string lpModuleName);
+        public static extern IntPtr GetModuleHandleW(
+			[In, Optional, MarshalAs(UnmanagedType.LPWStr)]
+            string lpModuleName);
 
 		[DllImport("kernel32", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "LoadLibraryW", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
 		public static extern IntPtr LoadLibraryW(
-			[MarshalAs(UnmanagedType.LPWStr)] string lpLibFileName);
+			[In, MarshalAs(UnmanagedType.LPWStr)]
+            string lpLibFileName);
 
 		[DllImport("kernel32", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi, EntryPoint = "GetProcAddress", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
 		public static extern IntPtr GetProcAddress(
-												IntPtr hModule,
-			[MarshalAs(UnmanagedType.LPStr)]	string lpProcName);
+			[In]
+			IntPtr hModule,
+			[In, MarshalAs(UnmanagedType.LPStr)]
+            string lpProcName);
 
 		[DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi, EntryPoint = "WriteProcessMemory", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool WriteProcessMemory(
-											IntPtr hProcess,
-											IntPtr lpBaseAddress,
-											byte[] lpBuffer,
-			[MarshalAs(UnmanagedType.U4)]	uint nSize,
-			[MarshalAs(UnmanagedType.U4)]	out uint lpNumberOfBytesWritten);
+			[In]
+			IntPtr hProcess,
+			[In]
+			IntPtr lpBaseAddress,
+			[In, MarshalAs(UnmanagedType.LPArray)]
+            byte[] lpBuffer,
+			[In, MarshalAs(UnmanagedType.U4)]
+            uint nSize,
+			[Out, Optional, MarshalAs(UnmanagedType.U4)]
+			out uint lpNumberOfBytesWritten);
 
 		[Flags]
 		public enum AllocationType : uint
@@ -99,21 +109,33 @@ namespace OG_Injector_Sharp
 
 		[DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi, EntryPoint = "VirtualAllocEx", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
 		public static extern IntPtr VirtualAllocEx(
-											IntPtr hProcess,
-											IntPtr lpAddress,
-			[MarshalAs(UnmanagedType.U4)]	uint dwSize,
-			[MarshalAs(UnmanagedType.U4)]	AllocationType flAllocationType,
-			[MarshalAs(UnmanagedType.U4)]	MemoryProtection flProtect);
+			[In]
+			IntPtr hProcess,
+			[In, Optional]
+			IntPtr lpAddress,
+			[In, MarshalAs(UnmanagedType.U4)]
+			uint dwSize,
+			[In, MarshalAs(UnmanagedType.U4)]
+			AllocationType flAllocationType,
+			[In, MarshalAs(UnmanagedType.U4)]
+			MemoryProtection flProtect);
 
 		[DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi, EntryPoint = "CreateRemoteThread", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
 		public static extern IntPtr CreateRemoteThread(
-											IntPtr hProcess,
-											IntPtr lpThreadAttributes,
-			[MarshalAs(UnmanagedType.U4)]	uint dwStackSize,
-											IntPtr lpStartAddress,
-											IntPtr lpParameter,
-			[MarshalAs(UnmanagedType.U4)]	uint dwCreationFlags,
-			[MarshalAs(UnmanagedType.U4)]	out uint lpThreadId);
+			[In]
+			IntPtr hProcess,
+			[In, Optional]
+			IntPtr lpThreadAttributes,
+			[In, MarshalAs(UnmanagedType.U4)]
+			uint dwStackSize,
+			[In]
+			IntPtr lpStartAddress,
+			[In, Optional]
+			IntPtr lpParameter,
+			[In, MarshalAs(UnmanagedType.U4)]
+			uint dwCreationFlags,
+			[Out, Optional, MarshalAs(UnmanagedType.U4)]
+			out uint lpThreadId);
 	}
 
 	class Program
@@ -134,7 +156,7 @@ namespace OG_Injector_Sharp
 			{
 				byte[] originalBytes = new byte[5];
 				Marshal.Copy(ntOpenFile, originalBytes, 0, 5);
-				if (!WinAPI.WriteProcessMemory(process.Handle, ntOpenFile, originalBytes, 5, out _))
+                if (!WinAPI.WriteProcessMemory(process.Handle, ntOpenFile, originalBytes, 5, out _))
 				{
 					Console.ForegroundColor = ConsoleColor.DarkRed;
 					Console.WriteLine("Can't write original NtOpenFile bytes to ");
