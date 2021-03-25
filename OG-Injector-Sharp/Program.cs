@@ -13,6 +13,7 @@ namespace OGInjector
 {
     class WinAPI
     {
+    #pragma warning disable CA1069 // Значения перечислений не должны повторяться
         [Flags]
         public enum AllocationType : uint
         {
@@ -73,6 +74,7 @@ namespace OGInjector
             PAGE_ENCLAVE_SS_FIRST = PAGE_ENCLAVE_MASK | 1,
             PAGE_ENCLAVE_SS_REST = PAGE_ENCLAVE_MASK | 2
         }
+    #pragma warning restore CA1069 // Значения перечислений не должны повторяться
 
         [DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "GetModuleHandleW", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
         public static extern IntPtr GetModuleHandleW(
@@ -88,7 +90,9 @@ namespace OGInjector
         public static extern IntPtr GetProcAddress(
             [In]
             IntPtr hModule,
+        #pragma warning disable CA2101 // Укажите маршалинг для строковых аргументов P/Invoke
             [In, MarshalAs(UnmanagedType.LPStr)]
+        #pragma warning restore CA2101 // Укажите маршалинг для строковых аргументов P/Invoke
             string lpProcName);
 
         [DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi, EntryPoint = "WriteProcessMemory", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
@@ -193,34 +197,34 @@ namespace OGInjector
             Console.ResetColor();
 
         #if OSIRIS
-			string dllname = "Osiris";
+            string dllname = "Osiris";
         #elif GOESP
-			string dllname = "GOESP";
+            string dllname = "GOESP";
         #else
             string dllname = "library.dll";
         #endif
 
         #if (OSIRIS || GOESP) && BETA
-			dllname += "_BETA";
+            dllname += "_BETA";
         #endif
 
         #if OSIRIS || GOESP
-			if (System.Runtime.Intrinsics.X86.Avx2.IsSupported)
-				dllname += "_AVX2.dll";
-			else if (System.Runtime.Intrinsics.X86.Avx.IsSupported)
-				dllname += "_AVX.dll";
-			else if (System.Runtime.Intrinsics.X86.Sse2.IsSupported)
-				dllname += "_SSE2.dll";
-			else
-			{
-				Console.ForegroundColor = ConsoleColor.DarkRed;
-				Console.WriteLine("Unsupported CPU intrinsics!");
-				Console.ForegroundColor = ConsoleColor.White;
-				Console.WriteLine("Press any key to continue...");
-				Console.ResetColor();
-				Console.ReadKey();
-				return 1;
-			}
+            if (System.Runtime.Intrinsics.X86.Avx2.IsSupported)
+                dllname += "_AVX2.dll";
+            else if (System.Runtime.Intrinsics.X86.Avx.IsSupported)
+                dllname += "_AVX.dll";
+            else if (System.Runtime.Intrinsics.X86.Sse2.IsSupported)
+                dllname += "_SSE2.dll";
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Unsupported CPU intrinsics!");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("Press any key to continue...");
+                Console.ResetColor();
+                Console.ReadKey();
+                return 1;
+            }
         #endif
 
             if (File.Exists(dllname))
