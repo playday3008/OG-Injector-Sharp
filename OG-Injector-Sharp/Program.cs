@@ -194,6 +194,7 @@ namespace OGInjector
             Console.ForegroundColor = ConsoleColor.Yellow;  Console.WriteLine(@" / ____/ / /_/ / /_/ / /_/ / /_/ / /_/ /  /_  _  __/    "); Thread.Sleep(50);
             Console.ForegroundColor = ConsoleColor.Blue;    Console.WriteLine(@"/_/   /_/\__,_/\__, /_____/\__,_/\__, /    /_//_/       "); Thread.Sleep(50);
             Console.ForegroundColor = ConsoleColor.Magenta; Console.WriteLine(@"              /____/            /____/                  "); Thread.Sleep(50);
+            Console.WriteLine("");
             Console.ResetColor();
 
         #if OSIRIS
