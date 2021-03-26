@@ -5,9 +5,14 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace OGInjector
 {
@@ -140,6 +145,40 @@ namespace OGInjector
             out uint lpThreadId);
     }
 
+#if OSIRIS || GOESP
+    class Artifacts
+    {
+        [JsonPropertyName("id")]
+        public int ID { get; set; }
+        [JsonPropertyName("node_id")]
+        public string NodeIDBase64 { get; set; }
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+        [JsonPropertyName("size_in_bytes")]
+        public int SizeInBytes { get; set; }
+        [JsonPropertyName("url")]
+        public Uri Url { get; set; }
+        [JsonPropertyName("archive_download_url")]
+        public Uri ArchiveUrl { get; set; }
+        [JsonPropertyName("expired")]
+        public bool Experied { get; set; }
+        [JsonPropertyName("created_at")]
+        public DateTime CreatedAt { get; set; }
+        [JsonPropertyName("updated_at")]
+        public DateTime UpdatedAt { get; set; }
+        [JsonPropertyName("expires_at")]
+        public DateTime ExperiesAt { get; set; }
+    }
+
+    class Actions
+    {
+        [JsonPropertyName("total_count")]
+        public int Count { get; set; }
+        [JsonPropertyName("artifacts")]
+        public Artifacts[] Artifacts { get; set; }
+    }
+#endif
+
     class Program
     {
         static bool Bypass(Process process, string processName)
@@ -180,7 +219,154 @@ namespace OGInjector
             }
         }
 
-        static int Main(string[] args)
+    #if OSIRIS || GOESP
+        static readonly HttpClient httpClient = new();
+
+        static async Task<bool> GetDllIfOutdated(string outputDll)
+        {
+            string githubApiString = "https://api.github.com/repos/playday3008/";
+            string latestFileName = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + ".OG-Injector-";
+
+            if (outputDll.Contains("Osiris"))
+            {
+                githubApiString += "Osiris";
+                latestFileName += "Osiris";
+            }
+            else if (outputDll.Contains("GOESP"))
+            {
+                githubApiString += "GOESP";
+                latestFileName += "GOESP";
+            }
+
+            githubApiString += "/actions/artifacts";
+
+            httpClient.DefaultRequestHeaders.Authorization = new("token", "6ab7fad6f911037ce34796c383a33bedc09cae3b");
+            httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("OG-Injector-Sharp");
+            HttpResponseMessage response = await httpClient.GetAsync(githubApiString);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.Write("Can't connect to GitHub API. Returned code: ");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(response.StatusCode);
+                Console.ResetColor();
+                if (File.Exists(outputDll))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine("Skipping checking for updates, because there is no connection to GitHub, but \"");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(outputDll);
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine("\" was found");
+                    Console.ResetColor();
+                    return true;
+                }
+                return false;
+            }
+
+            JsonDocument jsonParsed = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+            Actions actions = await Task.Run(() => JsonSerializer.Deserialize<Actions>(jsonParsed.RootElement.GetRawText()));
+
+            if (File.Exists(latestFileName))
+            {
+                if (actions.Count == Convert.ToInt32(await File.ReadAllTextAsync(latestFileName, Encoding.Unicode)))
+                {
+                    if (File.Exists(outputDll))
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write("No updates for: ");
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine(outputDll);
+                        Console.ResetColor();
+                        return true;
+                    }
+                }
+                else
+                {
+                    if ((File.GetAttributes(latestFileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                        File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed);
+                    await File.WriteAllTextAsync(latestFileName, actions.Count.ToString());
+                }
+            }
+            else
+            {
+                await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
+                File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
+            }
+
+            Uri zipUrl = null;
+            foreach (Artifacts i in actions.Artifacts)
+            {
+                if (i.Name.Contains("Windows"))
+                    if (i.Name.Contains("BETA") == outputDll.Contains("BETA"))
+                        if ((outputDll.Contains("SSE2") && i.Name.Contains("SSE2")) || (outputDll.Contains("AVX.") && i.Name.Contains("AVX") && !i.Name.EndsWith('2')) || (outputDll.Contains("AVX2") && i.Name.Contains("AVX2")))
+                        {
+                            if (i.Experied)
+                            {
+                                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                                Console.Write("There is no downloadable \"");
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                                Console.Write(outputDll);
+                                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                                Console.WriteLine("\" at the moment");
+                                Console.ResetColor();
+                                return false;
+                            }
+                            Console.ForegroundColor = ConsoleColor.DarkGreen;
+                            Console.Write("Update available for: ");
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine(outputDll);
+                            Console.ForegroundColor = ConsoleColor.DarkGreen;
+                            Console.Write("Creation date: ");
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine(i.CreatedAt);
+                            Console.ResetColor();
+                            zipUrl = i.ArchiveUrl;
+                            break;
+                        }
+            }
+
+            HttpResponseMessage downloadResponse = await httpClient.GetAsync(zipUrl);
+            if (downloadResponse.IsSuccessStatusCode)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.Write("Downloaded latest: ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(outputDll);
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.Write("Cant download latest ");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(outputDll);
+                Console.ResetColor();
+                if (File.Exists(outputDll))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine("Use available dll instead");
+                    Console.ResetColor();
+                    return true;
+                }
+                return false;
+            }
+
+            string tempFile = Path.GetTempFileName();
+
+            using (FileStream zipStream = new(tempFile, FileMode.Truncate))
+            {
+                await zipStream.WriteAsync(await httpClient.GetByteArrayAsync(downloadResponse.RequestMessage.RequestUri));
+            }
+
+            ZipFile.ExtractToDirectory(tempFile, Directory.GetCurrentDirectory(), true);
+
+            return true;
+        }
+    #endif
+
+        static async Task<int> Main(string[] args)
         {
             Console.OutputEncoding = Encoding.Unicode;
             Console.ForegroundColor = ConsoleColor.Red;     Console.WriteLine(@"   ____  ______   ____        _           __            "); Thread.Sleep(50);
@@ -219,6 +405,18 @@ namespace OGInjector
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine("Unsupported CPU intrinsics!");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("Press any key to continue...");
+                Console.ResetColor();
+                Console.ReadKey();
+                return 1;
+            }
+
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine("Checking for " + dllname + " updates");
+            Console.ResetColor();
+            if (!await GetDllIfOutdated(dllname))
+            {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
