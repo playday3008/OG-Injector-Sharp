@@ -459,7 +459,7 @@ namespace OGInjector
                             }
                             Color.DarkGreen();  Console.Write("Update available for: ");
                             Color.Green();      Console.WriteLine(outputDll);
-                            Color.DarkGreen();  Console.Write("Creation date: ");
+                            Color.DarkGreen();  Console.Write("Created at: ");
                             Color.Green();      Console.WriteLine(i.CreatedAt.ToLongTimeString());
                             Console.ResetColor();
                             zipUrl = i.ArchiveUrl;
