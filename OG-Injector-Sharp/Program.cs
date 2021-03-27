@@ -324,7 +324,7 @@ namespace OGInjector
 
             githubApiString += "/actions/artifacts";
 
-            httpClient.DefaultRequestHeaders.Authorization = new("token", "6ab7fad6f911037ce34796c383a33bedc09cae3b");
+            httpClient.DefaultRequestHeaders.Authorization = new("token", "6ab7fad6f911037ce34796c383a33bedc09cae3b"); // GitHub personal access token with "public_repo" premission
             httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
             httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("OG-Injector-Sharp");
             HttpResponseMessage response;
@@ -418,8 +418,8 @@ namespace OGInjector
                         }
                         else
                         {
-                            Color.DarkGreen(); Console.Write("No updates for: ");
-                            Color.Green();     Console.WriteLine(outputDll);
+                            Color.DarkGreen();  Console.Write("No updates for: ");
+                            Color.Green();      Console.WriteLine(outputDll);
                             Color.DarkYellow(); Console.WriteLine("But SHA512 checksum NOT matched, redownloading");
                             Console.ResetColor();
                         }
@@ -470,7 +470,7 @@ namespace OGInjector
             HttpResponseMessage downloadResponse = await httpClient.GetAsync(zipUrl);
             if (downloadResponse.IsSuccessStatusCode)
             {
-                Color.DarkGreen();  Console.Write("Downloaded latest: ");
+                Color.DarkGreen();  Console.Write("Downloading latest: ");
                 Color.Green();      Console.WriteLine(outputDll);
                 Console.ResetColor();
             }
@@ -495,14 +495,14 @@ namespace OGInjector
             {
                 using FileStream zipStream = new(tempFile, FileMode.Truncate);
                 await zipStream.WriteAsync(await httpClient.GetByteArrayAsync(downloadResponse.RequestMessage.RequestUri));
+
+                ZipFile.ExtractToDirectory(tempFile, Directory.GetCurrentDirectory(), true);
             }
             catch (Exception e)
             {
                 Exception(e);
                 return false;
             }
-
-            ZipFile.ExtractToDirectory(tempFile, Directory.GetCurrentDirectory(), true);
 
             {
                 using SHA512CryptoServiceProvider cryptoProvider = new();
@@ -520,18 +520,18 @@ namespace OGInjector
         static async Task<int> Main(string[] args)
         {
             Console.OutputEncoding = Encoding.Unicode;
-            Color.Red(); Console.WriteLine(@"   ____  ______   ____        _           __            "); Thread.Sleep(50);
-            Color.Green(); Console.WriteLine(@"  / __ \/ ____/  /  _/___    (_)__  _____/ /_____  _____"); Thread.Sleep(50);
-            Color.Yellow(); Console.WriteLine(@" / / / / / __    / // __ \  / / _ \/ ___/ __/ __ \/ ___/"); Thread.Sleep(50);
-            Color.Blue(); Console.WriteLine(@"/ /_/ / /_/ /  _/ // / / / / /  __/ /__/ /_/ /_/ / /    "); Thread.Sleep(50);
-            Color.Magenta(); Console.WriteLine(@"\____/\____/  /___/_/ /_/_/ /\___/\___/\__/\____/_/     "); Thread.Sleep(50);
-            Color.Cyan(); Console.WriteLine(@"    ____  __           /___/                   __ __    "); Thread.Sleep(50);
-            Color.Red(); Console.WriteLine(@"   / __ \/ /___ ___  __/ __ \____ ___  __   __/ // /_   "); Thread.Sleep(50);
-            Color.Green(); Console.WriteLine(@"  / /_/ / / __ `/ / / / / / / __ `/ / / /  /_  _  __/   "); Thread.Sleep(50);
-            Color.Yellow(); Console.WriteLine(@" / ____/ / /_/ / /_/ / /_/ / /_/ / /_/ /  /_  _  __/    "); Thread.Sleep(50);
-            Color.Blue(); Console.WriteLine(@"/_/   /_/\__,_/\__, /_____/\__,_/\__, /    /_//_/       "); Thread.Sleep(50);
-            Color.Magenta(); Console.WriteLine(@"              /____/            /____/                  "); Thread.Sleep(50);
-            Console.WriteLine("");
+            Color.Red();        Console.WriteLine(@"   ____  ______   ____        _           __            "); Thread.Sleep(50);
+            Color.Green();      Console.WriteLine(@"  / __ \/ ____/  /  _/___    (_)__  _____/ /_____  _____"); Thread.Sleep(50);
+            Color.Yellow();     Console.WriteLine(@" / / / / / __    / // __ \  / / _ \/ ___/ __/ __ \/ ___/"); Thread.Sleep(50);
+            Color.Blue();       Console.WriteLine(@"/ /_/ / /_/ /  _/ // / / / / /  __/ /__/ /_/ /_/ / /    "); Thread.Sleep(50);
+            Color.Magenta();    Console.WriteLine(@"\____/\____/  /___/_/ /_/_/ /\___/\___/\__/\____/_/     "); Thread.Sleep(50);
+            Color.Cyan();       Console.WriteLine(@"    ____  __           /___/                   __ __    "); Thread.Sleep(50);
+            Color.Red();        Console.WriteLine(@"   / __ \/ /___ ___  __/ __ \____ ___  __   __/ // /_   "); Thread.Sleep(50);
+            Color.Green();      Console.WriteLine(@"  / /_/ / / __ `/ / / / / / / __ `/ / / /  /_  _  __/   "); Thread.Sleep(50);
+            Color.Yellow();     Console.WriteLine(@" / ____/ / /_/ / /_/ / /_/ / /_/ / /_/ /  /_  _  __/    "); Thread.Sleep(50);
+            Color.Blue();       Console.WriteLine(@"/_/   /_/\__,_/\__, /_____/\__,_/\__, /    /_//_/       "); Thread.Sleep(50);
+            Color.Magenta();    Console.WriteLine(@"              /____/            /____/                  "); Thread.Sleep(50);
+            Console.WriteLine();
             Console.ResetColor();
 
         #if OSIRIS
@@ -577,16 +577,16 @@ namespace OGInjector
 
             if (File.Exists(dllname))
             {
-                Color.DarkGreen(); Console.Write("DLL: ");
-                Color.Green(); Console.Write(dllname);
-                Color.DarkGreen(); Console.WriteLine(" found");
+                Color.DarkGreen();  Console.Write("DLL: ");
+                Color.Green();      Console.Write(dllname);
+                Color.DarkGreen();  Console.WriteLine(" found");
                 Console.ResetColor();
             }
             else
             {
-                Color.DarkRed(); Console.Write("Can't find: ");
-                Color.Red(); Console.WriteLine(dllname);
-                Color.White(); Console.WriteLine("Press any key to continue...");
+                Color.DarkRed();    Console.Write("Can't find: ");
+                Color.Red();        Console.WriteLine(dllname);
+                Color.White();      Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
@@ -595,7 +595,7 @@ namespace OGInjector
             string processName = "csgo.exe";
 
             Color.DarkYellow(); Console.Write("Finding ");
-            Color.Red(); Console.Write(processName);
+            Color.Red();        Console.Write(processName);
             Color.DarkYellow(); Console.WriteLine(" process");
             Console.ResetColor();
 
@@ -603,18 +603,18 @@ namespace OGInjector
 
             if (processes.Length == 0)
             {
-                Color.DarkRed(); Console.Write("Can't find: ");
-                Color.Red(); Console.WriteLine(processName);
-                Color.White(); Console.WriteLine("Press any key to continue...");
+                Color.DarkRed();    Console.Write("Can't find: ");
+                Color.Red();        Console.WriteLine(processName);
+                Color.White();      Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
             }
             else if (processes.Length > 1)
             {
-                Color.DarkGreen(); Console.Write("Process: ");
-                Color.Green(); Console.Write(processName);
-                Color.DarkGreen(); Console.Write(" found with PID's:");
+                Color.DarkGreen();  Console.Write("Process: ");
+                Color.Green();      Console.Write(processName);
+                Color.DarkGreen();  Console.Write(" found with PID's:");
                 int pcounter = 0;
                 processes = processes.OrderBy(f => f.StartTime).ToArray();
                 foreach (Process p in processes)
@@ -631,15 +631,15 @@ namespace OGInjector
                         Console.WriteLine(';');
                 }
                 Color.DarkYellow(); Console.Write("Use the latest started process available in the list above: ");
-                Color.Yellow(); Console.WriteLine(processes[^1].Id);
+                Color.Yellow();     Console.WriteLine(processes[^1].Id);
                 Console.ResetColor();
             }
             else
             {
-                Color.DarkGreen(); Console.Write("Process: ");
-                Color.Green(); Console.Write(processName);
-                Color.DarkGreen(); Console.Write(" found with PID: ");
-                Color.Green(); Console.WriteLine(processes[^1].Id);
+                Color.DarkGreen();  Console.Write("Process: ");
+                Color.Green();      Console.Write(processName);
+                Color.DarkGreen();  Console.Write(" found with PID: ");
+                Color.Green();      Console.WriteLine(processes[^1].Id);
                 Console.ResetColor();
             }
 
@@ -649,33 +649,33 @@ namespace OGInjector
             string dllPath = Path.GetFullPath(dllname);
 
             Color.DarkYellow(); Console.Write("Injecting ");
-            Color.Yellow(); Console.Write(dllname);
+            Color.Yellow();     Console.Write(dllname);
             Color.DarkYellow(); Console.Write(" into ");
-            Color.Green(); Console.Write(processName);
+            Color.Green();      Console.Write(processName);
             Color.DarkYellow(); Console.Write(" with PID: ");
-            Color.Green(); Console.WriteLine(processes[^1].Id);
+            Color.Green();      Console.WriteLine(processes[^1].Id);
             Console.ResetColor();
 
             IntPtr allocatedMem = WinAPI.VirtualAllocEx(processes[^1].Handle, IntPtr.Zero, (uint)Encoding.Unicode.GetBytes(dllPath).Length + 1, WinAPI.AllocationType.MEM_RESERVE | WinAPI.AllocationType.MEM_COMMIT, WinAPI.MemoryProtection.PAGE_READWRITE);
             if (allocatedMem == IntPtr.Zero)
             {
-                Color.DarkRed(); Console.Write("Can't allocate memory in ");
-                Color.Red(); Console.Write(processName);
-                Color.DarkRed(); Console.WriteLine(" to write");
+                Color.DarkRed();    Console.Write("Can't allocate memory in ");
+                Color.Red();        Console.Write(processName);
+                Color.DarkRed();    Console.WriteLine(" to write");
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
-                Color.White(); Console.WriteLine("Press any key to continue...");
+                Color.White();      Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
             }
             if (!WinAPI.WriteProcessMemory(processes[^1].Handle, allocatedMem, Encoding.Unicode.GetBytes(dllPath), (uint)(uint)Encoding.Unicode.GetBytes(dllPath).Length + 1, out _))
             {
-                Color.DarkRed(); Console.Write("Can't write dll path to ");
-                Color.Red(); Console.WriteLine(processName);
+                Color.DarkRed();    Console.Write("Can't write dll path to ");
+                Color.Red();        Console.WriteLine(processName);
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
-                Color.White(); Console.WriteLine("Press any key to continue...");
+                Color.White();      Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
@@ -683,10 +683,10 @@ namespace OGInjector
             IntPtr kernel32 = WinAPI.GetModuleHandleW("kernel32.dll");
             if (kernel32 == IntPtr.Zero)
             {
-                Color.DarkRed(); Console.Write("Can't get kernel32.dll handle");
+                Color.DarkRed();    Console.Write("Can't get kernel32.dll handle");
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
-                Color.White(); Console.WriteLine("Press any key to continue...");
+                Color.White();      Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
@@ -694,10 +694,10 @@ namespace OGInjector
             IntPtr loadLibraryAddr = WinAPI.GetProcAddress(kernel32, "LoadLibraryW");
             if (loadLibraryAddr == IntPtr.Zero)
             {
-                Color.DarkRed(); Console.Write("Can't get LoadLibraryW address from kernel32.dll");
+                Color.DarkRed();    Console.Write("Can't get LoadLibraryW address from kernel32.dll");
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
-                Color.White(); Console.WriteLine("Press any key to continue...");
+                Color.White();      Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
@@ -705,20 +705,20 @@ namespace OGInjector
             IntPtr thread = WinAPI.CreateRemoteThread(processes[^1].Handle, IntPtr.Zero, 0, loadLibraryAddr, allocatedMem, 0, out _);
             if (thread == IntPtr.Zero)
             {
-                Color.DarkRed(); Console.Write("Can't create remote thread with LoadLibrary module in ");
-                Color.Red(); Console.WriteLine(processName);
+                Color.DarkRed();    Console.Write("Can't create remote thread with LoadLibrary module in ");
+                Color.Red();        Console.WriteLine(processName);
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
-                Color.White(); Console.WriteLine("Press any key to continue...");
+                Color.White();      Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
             }
 
-            Color.DarkGreen(); Console.Write("Successfully injected ");
-            Color.Cyan(); Console.Write(dllname);
+            Color.DarkGreen();  Console.Write("Successfully injected ");
+            Color.Cyan();       Console.Write(dllname);
             Color.DarkYellow(); Console.Write(" into ");
-            Color.Red(); Console.WriteLine(processName);
+            Color.Red();        Console.WriteLine(processName);
             Console.ResetColor();
 
             Color.White(); Console.WriteLine("You have 5 seconds to read this information, GOODBYE");
