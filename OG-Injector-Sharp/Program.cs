@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -18,30 +19,29 @@ namespace OGInjector
 {
     class WinAPI
     {
-    #pragma warning disable CA1069 // Значения перечислений не должны повторяться
         [Flags]
         public enum AllocationType : uint
         {
             MEM_UNMAP_WITH_TRANSIENT_BOOST = 0x00000001,
-            MEM_COALESCE_PLACEHOLDERS = 0x00000001,
+            MEM_COALESCE_PLACEHOLDERS = MEM_UNMAP_WITH_TRANSIENT_BOOST,
             MEM_PRESERVE_PLACEHOLDER = 0x00000002,
             MEM_COMMIT = 0x00001000,
             MEM_RESERVE = 0x00002000,
             MEM_REPLACE_PLACEHOLDER = 0x00004000,
-            MEM_DECOMMIT = 0x00004000,
+            MEM_DECOMMIT = MEM_REPLACE_PLACEHOLDER,
             MEM_RELEASE = 0x00008000,
             MEM_FREE = 0x00010000,
             MEM_PRIVATE = 0x00020000,
             MEM_RESERVE_PLACEHOLDER = 0x00040000,
-            MEM_MAPPED = 0x00040000,
+            MEM_MAPPED = MEM_RESERVE_PLACEHOLDER,
             MEM_RESET = 0x00080000,
             MEM_TOP_DOWN = 0x00100000,
             MEM_WRITE_WATCH = 0x00200000,
             MEM_PHYSICAL = 0x00400000,
             MEM_ROTATE = 0x00800000,
-            MEM_DIFFERENT_IMAGE_BASE_OK = 0x00800000,
+            MEM_DIFFERENT_IMAGE_BASE_OK = MEM_ROTATE,
             MEM_IMAGE = 0x01000000,
-            MEM_RESET_UNDO = 0x01000000,
+            MEM_RESET_UNDO = MEM_IMAGE,
             MEM_LARGE_PAGES = 0x20000000,
             MEM_4MB_PAGES = 0x80000000,
             MEM_64K_PAGES = MEM_LARGE_PAGES | MEM_PHYSICAL
@@ -70,16 +70,15 @@ namespace OGInjector
             PAGE_GRAPHICS_COHERENT = 0x20000,
             PAGE_GRAPHICS_NOCACHE = 0x40000,
             PAGE_ENCLAVE_THREAD_CONTROL = 0x80000000,
-            PAGE_REVERT_TO_FILE_MAP = 0x80000000,
+            PAGE_REVERT_TO_FILE_MAP = PAGE_ENCLAVE_THREAD_CONTROL,
             PAGE_TARGETS_NO_UPDATE = 0x40000000,
-            PAGE_TARGETS_INVALID = 0x40000000,
+            PAGE_TARGETS_INVALID = PAGE_TARGETS_NO_UPDATE,
             PAGE_ENCLAVE_UNVALIDATED = 0x20000000,
             PAGE_ENCLAVE_MASK = 0x10000000,
-            PAGE_ENCLAVE_DECOMMIT = PAGE_ENCLAVE_MASK | 0,
+            PAGE_ENCLAVE_DECOMMIT = PAGE_ENCLAVE_MASK,
             PAGE_ENCLAVE_SS_FIRST = PAGE_ENCLAVE_MASK | 1,
             PAGE_ENCLAVE_SS_REST = PAGE_ENCLAVE_MASK | 2
         }
-    #pragma warning restore CA1069 // Значения перечислений не должны повторяться
 
         [DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "GetModuleHandleW", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
         public static extern IntPtr GetModuleHandleW(
@@ -145,6 +144,74 @@ namespace OGInjector
             out uint lpThreadId);
     }
 
+    class Color
+    {
+        public static void Black()
+        {
+            Console.ForegroundColor = ConsoleColor.Black;
+        }
+        public static void DarkBlue()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+        }
+        public static void DarkGreen()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+        }
+        public static void DarkCyan()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+        }
+        public static void DarkRed()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+        }
+        public static void DarkMagenta()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+        }
+        public static void DarkYellow()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+        }
+        public static void Gray()
+        {
+            Console.ForegroundColor = ConsoleColor.Gray;
+        }
+        public static void DarkGray()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+        }
+        public static void Blue()
+        {
+            Console.ForegroundColor = ConsoleColor.Blue;
+        }
+        public static void Green()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+        }
+        public static void Cyan()
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+        }
+        public static void Red()
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+        }
+        public static void Magenta()
+        {
+            Console.ForegroundColor = ConsoleColor.Magenta;
+        }
+        public static void Yellow()
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+        }
+        public static void White()
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+    }
+
 #if OSIRIS || GOESP
     class Artifacts
     {
@@ -186,8 +253,7 @@ namespace OGInjector
             IntPtr ntdll = WinAPI.LoadLibraryW("ntdll");
             if (ntdll == IntPtr.Zero)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Can't load ntdll.dll module");
+                Color.DarkRed(); Console.WriteLine("Can't load ntdll.dll module");
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
                 return false;
@@ -199,10 +265,8 @@ namespace OGInjector
                 Marshal.Copy(ntOpenFile, originalBytes, 0, 5);
                 if (!WinAPI.WriteProcessMemory(process.Handle, ntOpenFile, originalBytes, 5, out _))
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-                    Console.WriteLine("Can't write original NtOpenFile bytes to ");
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(processName);
+                    Color.DarkRed(); Console.WriteLine("Can't write original NtOpenFile bytes to ");
+                    Color.Red(); Console.WriteLine(processName);
                     Console.ResetColor();
                     Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
                     return false;
@@ -211,8 +275,7 @@ namespace OGInjector
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Can't find NtOpenFile into ntdll.dll");
+                Color.DarkRed(); Console.WriteLine("Can't find NtOpenFile into ntdll.dll");
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
                 return false;
@@ -369,17 +432,17 @@ namespace OGInjector
         static async Task<int> Main(string[] args)
         {
             Console.OutputEncoding = Encoding.Unicode;
-            Console.ForegroundColor = ConsoleColor.Red;     Console.WriteLine(@"   ____  ______   ____        _           __            "); Thread.Sleep(50);
-            Console.ForegroundColor = ConsoleColor.Green;   Console.WriteLine(@"  / __ \/ ____/  /  _/___    (_)__  _____/ /_____  _____"); Thread.Sleep(50);
-            Console.ForegroundColor = ConsoleColor.Yellow;  Console.WriteLine(@" / / / / / __    / // __ \  / / _ \/ ___/ __/ __ \/ ___/"); Thread.Sleep(50);
-            Console.ForegroundColor = ConsoleColor.Blue;    Console.WriteLine(@"/ /_/ / /_/ /  _/ // / / / / /  __/ /__/ /_/ /_/ / /    "); Thread.Sleep(50);
-            Console.ForegroundColor = ConsoleColor.Magenta; Console.WriteLine(@"\____/\____/  /___/_/ /_/_/ /\___/\___/\__/\____/_/     "); Thread.Sleep(50);
-            Console.ForegroundColor = ConsoleColor.Cyan;    Console.WriteLine(@"    ____  __           /___/                   __ __    "); Thread.Sleep(50);
-            Console.ForegroundColor = ConsoleColor.Red;     Console.WriteLine(@"   / __ \/ /___ ___  __/ __ \____ ___  __   __/ // /_   "); Thread.Sleep(50);
-            Console.ForegroundColor = ConsoleColor.Green;   Console.WriteLine(@"  / /_/ / / __ `/ / / / / / / __ `/ / / /  /_  _  __/   "); Thread.Sleep(50);
-            Console.ForegroundColor = ConsoleColor.Yellow;  Console.WriteLine(@" / ____/ / /_/ / /_/ / /_/ / /_/ / /_/ /  /_  _  __/    "); Thread.Sleep(50);
-            Console.ForegroundColor = ConsoleColor.Blue;    Console.WriteLine(@"/_/   /_/\__,_/\__, /_____/\__,_/\__, /    /_//_/       "); Thread.Sleep(50);
-            Console.ForegroundColor = ConsoleColor.Magenta; Console.WriteLine(@"              /____/            /____/                  "); Thread.Sleep(50);
+            Color.Red(); Console.WriteLine(@"   ____  ______   ____        _           __            "); Thread.Sleep(50);
+            Color.Green(); Console.WriteLine(@"  / __ \/ ____/  /  _/___    (_)__  _____/ /_____  _____"); Thread.Sleep(50);
+            Color.Yellow(); Console.WriteLine(@" / / / / / __    / // __ \  / / _ \/ ___/ __/ __ \/ ___/"); Thread.Sleep(50);
+            Color.Blue(); Console.WriteLine(@"/ /_/ / /_/ /  _/ // / / / / /  __/ /__/ /_/ /_/ / /    "); Thread.Sleep(50);
+            Color.Magenta(); Console.WriteLine(@"\____/\____/  /___/_/ /_/_/ /\___/\___/\__/\____/_/     "); Thread.Sleep(50);
+            Color.Cyan(); Console.WriteLine(@"    ____  __           /___/                   __ __    "); Thread.Sleep(50);
+            Color.Red(); Console.WriteLine(@"   / __ \/ /___ ___  __/ __ \____ ___  __   __/ // /_   "); Thread.Sleep(50);
+            Color.Green(); Console.WriteLine(@"  / /_/ / / __ `/ / / / / / / __ `/ / / /  /_  _  __/   "); Thread.Sleep(50);
+            Color.Yellow(); Console.WriteLine(@" / ____/ / /_/ / /_/ / /_/ / /_/ / /_/ /  /_  _  __/    "); Thread.Sleep(50);
+            Color.Blue(); Console.WriteLine(@"/_/   /_/\__,_/\__, /_____/\__,_/\__, /    /_//_/       "); Thread.Sleep(50);
+            Color.Magenta(); Console.WriteLine(@"              /____/            /____/                  "); Thread.Sleep(50);
             Console.WriteLine("");
             Console.ResetColor();
 
@@ -404,21 +467,19 @@ namespace OGInjector
                 dllname += "_SSE2.dll";
             else
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Unsupported CPU intrinsics!");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Press any key to continue...");
+                Color.DarkRed(); Console.WriteLine("Unsupported CPU intrinsics!");
+                Color.White();   Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
             }
 
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Color.DarkYellow();
             Console.WriteLine("Checking for " + dllname + " updates");
             Console.ResetColor();
             if (!await GetDllIfOutdated(dllname))
             {
-                Console.ForegroundColor = ConsoleColor.White;
+                Color.White();
                 Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
@@ -428,22 +489,16 @@ namespace OGInjector
 
             if (File.Exists(dllname))
             {
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.Write("DLL: ");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write(dllname);
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine(" found");
+                Color.DarkGreen(); Console.Write("DLL: ");
+                Color.Green(); Console.Write(dllname);
+                Color.DarkGreen(); Console.WriteLine(" found");
                 Console.ResetColor();
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write("Can't find: ");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(dllname);
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Press any key to continue...");
+                Color.DarkRed(); Console.Write("Can't find: ");
+                Color.Red(); Console.WriteLine(dllname);
+                Color.White(); Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
@@ -451,37 +506,29 @@ namespace OGInjector
 
             string processName = "csgo.exe";
 
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.Write("Finding ");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write(processName);
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine(" process");
+            Color.DarkYellow(); Console.Write("Finding ");
+            Color.Red(); Console.Write(processName);
+            Color.DarkYellow(); Console.WriteLine(" process");
             Console.ResetColor();
 
             Process[] processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(processName));
 
             if (processes.Length == 0)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write("Can't find: ");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(processName);
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Press any key to continue...");
+                Color.DarkRed(); Console.Write("Can't find: ");
+                Color.Red(); Console.WriteLine(processName);
+                Color.White(); Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
             }
             else if (processes.Length > 1)
             {
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.Write("Process: ");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write(processName);
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.Write(" found with PID's:");
+                Color.DarkGreen(); Console.Write("Process: ");
+                Color.Green(); Console.Write(processName);
+                Color.DarkGreen(); Console.Write(" found with PID's:");
                 int pcounter = 0;
+                processes = processes.OrderBy(f => f.StartTime).ToArray();
                 foreach (Process p in processes)
                 {
                     pcounter++;
@@ -495,22 +542,16 @@ namespace OGInjector
                     else
                         Console.WriteLine(';');
                 }
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.Write("Used the latest PID available in the list above: ");
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine(processes[^1].Id);
+                Color.DarkYellow(); Console.Write("Use the latest started process available in the list above: ");
+                Color.Yellow(); Console.WriteLine(processes[^1].Id);
                 Console.ResetColor();
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.Write("Process: ");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write(processName);
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.Write(" found with PID: ");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(processes[^1].Id);
+                Color.DarkGreen(); Console.Write("Process: ");
+                Color.Green(); Console.Write(processName);
+                Color.DarkGreen(); Console.Write(" found with PID: ");
+                Color.Green(); Console.WriteLine(processes[^1].Id);
                 Console.ResetColor();
             }
 
@@ -519,47 +560,34 @@ namespace OGInjector
 
             string dllPath = Path.GetFullPath(dllname);
 
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.Write("Injecting ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write(dllname);
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.Write(" into ");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(processName);
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.Write(" with PID: ");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(processes[^1].Id);
+            Color.DarkYellow(); Console.Write("Injecting ");
+            Color.Yellow(); Console.Write(dllname);
+            Color.DarkYellow(); Console.Write(" into ");
+            Color.Green(); Console.Write(processName);
+            Color.DarkYellow(); Console.Write(" with PID: ");
+            Color.Green(); Console.WriteLine(processes[^1].Id);
             Console.ResetColor();
 
             IntPtr allocatedMem = WinAPI.VirtualAllocEx(processes[^1].Handle, IntPtr.Zero, (uint)Encoding.Unicode.GetBytes(dllPath).Length + 1, WinAPI.AllocationType.MEM_RESERVE | WinAPI.AllocationType.MEM_COMMIT, WinAPI.MemoryProtection.PAGE_READWRITE);
             if (allocatedMem == IntPtr.Zero)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write("Can't allocate memory in ");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write(processName);
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine(" to write");
+                Color.DarkRed(); Console.Write("Can't allocate memory in ");
+                Color.Red(); Console.Write(processName);
+                Color.DarkRed(); Console.WriteLine(" to write");
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Press any key to continue...");
+                Color.White(); Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
             }
             if (!WinAPI.WriteProcessMemory(processes[^1].Handle, allocatedMem, Encoding.Unicode.GetBytes(dllPath), (uint)(uint)Encoding.Unicode.GetBytes(dllPath).Length + 1, out _))
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write("Can't write dll path to ");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(processName);
+                Color.DarkRed(); Console.Write("Can't write dll path to ");
+                Color.Red(); Console.WriteLine(processName);
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Press any key to continue...");
+                Color.White(); Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
@@ -567,12 +595,10 @@ namespace OGInjector
             IntPtr kernel32 = WinAPI.GetModuleHandleW("kernel32.dll");
             if (kernel32 == IntPtr.Zero)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write("Can't get kernel32.dll handle");
+                Color.DarkRed(); Console.Write("Can't get kernel32.dll handle");
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Press any key to continue...");
+                Color.White(); Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
@@ -580,12 +606,10 @@ namespace OGInjector
             IntPtr loadLibraryAddr = WinAPI.GetProcAddress(kernel32, "LoadLibraryW");
             if (loadLibraryAddr == IntPtr.Zero)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write("Can't get LoadLibraryW address from kernel32.dll");
+                Color.DarkRed(); Console.Write("Can't get LoadLibraryW address from kernel32.dll");
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Press any key to continue...");
+                Color.White(); Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
@@ -593,31 +617,23 @@ namespace OGInjector
             IntPtr thread = WinAPI.CreateRemoteThread(processes[^1].Handle, IntPtr.Zero, 0, loadLibraryAddr, allocatedMem, 0, out _);
             if (thread == IntPtr.Zero)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write("Can't create remote thread with LoadLibrary module in ");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(processName);
+                Color.DarkRed(); Console.Write("Can't create remote thread with LoadLibrary module in ");
+                Color.Red(); Console.WriteLine(processName);
                 Console.ResetColor();
                 Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Press any key to continue...");
+                Color.White(); Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
             }
 
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.Write("Successfully injected ");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write(dllname);
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.Write(" into ");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(processName);
+            Color.DarkGreen(); Console.Write("Successfully injected ");
+            Color.Cyan(); Console.Write(dllname);
+            Color.DarkYellow(); Console.Write(" into ");
+            Color.Red(); Console.WriteLine(processName);
             Console.ResetColor();
 
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("You have 5 seconds to read this information, GOODBYE");
+            Color.White(); Console.WriteLine("You have 5 seconds to read this information, GOODBYE");
             Console.ResetColor();
 
             Thread.Sleep(5000);
