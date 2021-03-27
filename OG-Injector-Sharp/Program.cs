@@ -246,6 +246,7 @@ namespace OGInjector
         static int Main(string[] args)
         {
             Console.OutputEncoding = Encoding.Unicode;
+            Console.Title = "OG Injector by PlayDay";
             Color.Red();     Console.WriteLine(@"   ____  ______   ____        _           __            "); Thread.Sleep(50);
             Color.Green();   Console.WriteLine(@"  / __ \/ ____/  /  _/___    (_)__  _____/ /_____  _____"); Thread.Sleep(50);
             Color.Yellow();  Console.WriteLine(@" / / / / / __    / // __ \  / / _ \/ ___/ __/ __ \/ ___/"); Thread.Sleep(50);
