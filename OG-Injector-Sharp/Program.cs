@@ -287,8 +287,6 @@ namespace OGInjector
             Color.DarkRed();    Console.WriteLine("Whoopsy I catch the fucking exception:");
             Color.Red();        Console.WriteLine("Message: " + e.Message);
             Console.ResetColor();
-            if (e.StackTrace != null)
-                Console.WriteLine("Stack trace: \n" + e.StackTrace);
             if (e.HelpLink != null)
                 Console.WriteLine("Help link: " + e.HelpLink);
         }
@@ -448,7 +446,6 @@ namespace OGInjector
             else
             {
                 await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
-                await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
                 File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
             }
 
@@ -578,7 +575,7 @@ namespace OGInjector
             }
         #endif
 
-            if (File.Exists(dllname) && !FileIsLocked(dllname))
+            if (File.Exists(dllname) && FileIsLocked(dllname))
             {
                 Color.DarkYellow();
                 Console.WriteLine("Skipping update check, because \"" + dllname + "\" file is locked");
