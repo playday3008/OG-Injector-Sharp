@@ -341,30 +341,19 @@ namespace OGInjector
             httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
             httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("OG-Injector-Sharp");
             HttpResponseMessage response = null;
-            HttpRequestException exception = null;
-            bool forbidden = false;
             try
             {
                 response = await httpClient.GetAsync(githubApiString);
-            }
-            catch (HttpRequestException e)
-            {
-                exception = e;
-                forbidden = true;
             }
             catch (Exception e)
             {
                 Exception(e);
                 return false;
             }
-            if (!response.IsSuccessStatusCode || forbidden)
+            if (!response.IsSuccessStatusCode)
             {
                 Color.DarkRed();    Console.Write("Can't connect to GitHub API. Returned code: ");
-                Color.Red();       
-                if (forbidden)
-                    Console.WriteLine(exception.StatusCode);
-                else
-                    Console.WriteLine(response.StatusCode);
+                Color.Red();        Console.WriteLine(response.StatusCode);
                 Console.ResetColor();
                 if (File.Exists(outputDll))
                 {
