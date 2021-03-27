@@ -248,7 +248,7 @@ namespace OGInjector
 
     class Program
     {
-        static bool Bypass(Process process, string processName)
+        private static bool Bypass(Process process, string processName)
         {
             IntPtr ntdll = WinAPI.LoadLibraryW("ntdll");
             if (ntdll == IntPtr.Zero)
@@ -282,7 +282,7 @@ namespace OGInjector
             }
         }
 
-        static void Exception(Exception e)
+        private static void Exception(Exception e)
         {
             Color.DarkRed();    Console.WriteLine("Whoopsy I catch the fucking exception:");
             Color.Red();        Console.WriteLine("Message: " + e.Message);
@@ -293,9 +293,24 @@ namespace OGInjector
                 Console.WriteLine("Help link: " + e.HelpLink);
         }
 
-        static readonly HttpClient httpClient = new();
+        private static bool FileIsLocked(string fileName)
+        {
+            try
+            {
+                using FileStream fileStream = File.Open(fileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                if (fileStream != null)
+                    fileStream.Close();
+                return false;
+            }
+            catch (IOException)
+            {
+                return true;
+            }
+        }
 
-        static async Task<bool> GetDllIfOutdated(string outputDll)
+        private static readonly HttpClient httpClient = new();
+
+        private static async Task<bool> GetDllIfOutdated(string outputDll)
         {
             string githubApiString = "https://api.github.com/repos/playday3008/";
             string latestFileName = null;
@@ -492,9 +507,9 @@ namespace OGInjector
             {
                 using FileStream zipStream = new(tempFile, FileMode.Truncate);
                 await zipStream.WriteAsync(await httpClient.GetByteArrayAsync(downloadResponse.RequestMessage.RequestUri));
+                zipStream.Close();
                 if (File.Exists(outputDll))
                     File.Delete(outputDll);
-                zipStream.Close();
                 ZipFile.ExtractToDirectory(tempFile, Directory.GetCurrentDirectory(), true);
             }
             catch (Exception e)
@@ -563,16 +578,25 @@ namespace OGInjector
             }
         #endif
 
-            Color.DarkYellow();
-            Console.WriteLine("Checking for " + dllname + " updates");
-            Console.ResetColor();
-            if (!await GetDllIfOutdated(dllname))
+            if (File.Exists(dllname) && !FileIsLocked(dllname))
             {
-                Color.White();
-                Console.WriteLine("Press any key to continue...");
+                Color.DarkYellow();
+                Console.WriteLine("Skipping update check, because \"" + dllname + "\" file is locked");
                 Console.ResetColor();
-                Console.ReadKey();
-                return 1;
+            }
+            else
+            {
+                Color.DarkYellow();
+                Console.WriteLine("Checking for " + dllname + " updates");
+                Console.ResetColor();
+                if (!await GetDllIfOutdated(dllname))
+                {
+                    Color.White();
+                    Console.WriteLine("Press any key to continue...");
+                    Console.ResetColor();
+                    Console.ReadKey();
+                    return 1;
+                }
             }
 
             if (File.Exists(dllname))
