@@ -3,12 +3,14 @@
 //#define BETA
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Net.Http;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -280,12 +282,32 @@ namespace OGInjector
             }
         }
 
+        static void Exception(Exception e)
+        {
+            Color.DarkRed();    Console.WriteLine("Whoopsy I catch the fucking exception:");
+            Color.Red();        Console.WriteLine("Message: " + e.Message);
+            Console.ResetColor();
+            if (e.StackTrace != null)
+                Console.WriteLine("Stack trace: \n" + e.StackTrace);
+            if (e.HelpLink != null)
+                Console.WriteLine("Help link: " + e.HelpLink);
+        }
+
         static readonly HttpClient httpClient = new();
 
         static async Task<bool> GetDllIfOutdated(string outputDll)
         {
             string githubApiString = "https://api.github.com/repos/playday3008/";
-            string latestFileName = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + ".OG-Injector-";
+            string latestFileName = null;
+            try
+            {
+                latestFileName = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.OG-Injector-";
+            }
+            catch (Exception e)
+            {
+                Exception(e);
+                return false;
+            }
 
         #if OSIRIS || GOESP
             if (outputDll.Contains("Osiris"))
@@ -305,7 +327,16 @@ namespace OGInjector
             httpClient.DefaultRequestHeaders.Authorization = new("token", "6ab7fad6f911037ce34796c383a33bedc09cae3b");
             httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
             httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("OG-Injector-Sharp");
-            HttpResponseMessage response = await httpClient.GetAsync(githubApiString);
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.GetAsync(githubApiString);
+            }
+            catch (Exception e)
+            {
+                Exception(e);
+                return false;
+            }
             if (!response.IsSuccessStatusCode)
             {
                 Color.DarkRed();    Console.Write("Can't connect to GitHub API. Returned code: ");
@@ -313,39 +344,98 @@ namespace OGInjector
                 Console.ResetColor();
                 if (File.Exists(outputDll))
                 {
-                    Color.DarkYellow(); Console.WriteLine("Skipping checking for updates, because there is no connection to GitHub, but \"");
-                    Color.Yellow();     Console.WriteLine(outputDll);
-                    Color.DarkYellow(); Console.WriteLine("\" was found");
-                    Console.ResetColor();
-                    return true;
+                    if (File.Exists(latestFileName))
+                    {
+                        IEnumerable<string> readed = await Task.Run(() => File.ReadLines(latestFileName, Encoding.Unicode));
+                        List<string> readedAsList = readed.ToList();
+
+                        using SHA512CryptoServiceProvider cryptoProvider = new();
+                        string hash = Encoding.Unicode.GetString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
+
+                        if (hash == readedAsList[1])
+                        {
+                            Color.DarkYellow(); Console.Write("Skipping checking for updates, because there is no connection to GitHub, but \"");
+                            Color.Yellow();     Console.Write(outputDll);
+                            Color.DarkYellow(); Console.WriteLine("\" was found and SHA512 checksum matched");
+                            Console.ResetColor();
+                            return true;
+                        }
+                        else
+                        {
+                            Color.DarkYellow(); Console.Write("Skipping checking for updates, because there is no connection to GitHub, but \"");
+                            Color.Yellow();     Console.Write(outputDll);
+                            Color.DarkYellow(); Console.Write("\" was found but SHA512 checksum");
+                            Color.Red();        Console.Write(" NOT ");
+                            Color.DarkYellow(); Console.WriteLine("matched");
+                            Console.ResetColor();
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        Color.DarkYellow(); Console.Write("Skipping checking for updates, because there is no connection to GitHub, but \"");
+                        Color.Yellow();     Console.Write(outputDll);
+                        Color.DarkYellow(); Console.WriteLine("\" was found");
+                        Console.ResetColor();
+                        return true;
+                    }
                 }
                 return false;
             }
 
-            JsonDocument jsonParsed = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-            Actions actions = await Task.Run(() => JsonSerializer.Deserialize<Actions>(jsonParsed.RootElement.GetRawText()));
+            JsonDocument jsonParsed;
+            Actions actions;
+            try
+            {
+                jsonParsed = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+                actions = await Task.Run(() => JsonSerializer.Deserialize<Actions>(jsonParsed.RootElement.GetRawText()));
+            }
+            catch (Exception e)
+            {
+                Exception(e);
+                return false;
+            }
 
             if (File.Exists(latestFileName))
             {
-                if (actions.Count == Convert.ToInt32(await File.ReadAllTextAsync(latestFileName, Encoding.Unicode)))
+                IEnumerable<string> readed = await Task.Run(() => File.ReadLines(latestFileName, Encoding.Unicode));
+                List<string> readedAsList = readed.ToList();
+                if (actions.Count == Convert.ToInt32(readedAsList[0]))
                 {
                     if (File.Exists(outputDll))
                     {
-                        Color.DarkGreen();  Console.Write("No updates for: ");
-                        Color.Green();      Console.WriteLine(outputDll);
-                        Console.ResetColor();
-                        return true;
+                        using SHA512CryptoServiceProvider cryptoProvider = new();
+                        string hash = Encoding.Unicode.GetString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
+
+                        if (hash == readedAsList[1])
+                        {
+                            Color.DarkGreen();  Console.Write("No updates for: ");
+                            Color.Green();      Console.WriteLine(outputDll);
+                            Color.DarkGreen();  Console.Write("SHA512 checksum matched: ");
+                            Color.Green();      Console.WriteLine(hash);
+                            Console.ResetColor();
+                            return true;
+                        }
+                        else
+                        {
+                            Color.DarkGreen(); Console.Write("No updates for: ");
+                            Color.Green();     Console.WriteLine(outputDll);
+                            Color.DarkYellow(); Console.WriteLine("But SHA512 checksum NOT matched, redownloading");
+                            Console.ResetColor();
+                        }
                     }
                 }
                 else
                 {
                     if ((File.GetAttributes(latestFileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
                         File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed);
-                    await File.WriteAllTextAsync(latestFileName, actions.Count.ToString());
+                    await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
+                    File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
                 }
             }
             else
             {
+                await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
                 await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
                 File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
             }
@@ -401,12 +491,28 @@ namespace OGInjector
 
             string tempFile = Path.GetTempFileName();
 
-            using (FileStream zipStream = new(tempFile, FileMode.Truncate))
+            try
             {
+                using FileStream zipStream = new(tempFile, FileMode.Truncate);
                 await zipStream.WriteAsync(await httpClient.GetByteArrayAsync(downloadResponse.RequestMessage.RequestUri));
+            }
+            catch (Exception e)
+            {
+                Exception(e);
+                return false;
             }
 
             ZipFile.ExtractToDirectory(tempFile, Directory.GetCurrentDirectory(), true);
+
+            {
+                using SHA512CryptoServiceProvider cryptoProvider = new();
+                string hash = Encoding.Unicode.GetString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
+
+                if ((File.GetAttributes(latestFileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                    File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed);
+                await File.AppendAllTextAsync(latestFileName, "\n" + hash, Encoding.Unicode);
+                File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
+            }
 
             return true;
         }
