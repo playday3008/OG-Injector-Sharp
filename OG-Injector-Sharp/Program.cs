@@ -460,7 +460,7 @@ namespace OGInjector
                             Color.DarkGreen();  Console.Write("Update available for: ");
                             Color.Green();      Console.WriteLine(outputDll);
                             Color.DarkGreen();  Console.Write("Creation date: ");
-                            Color.Green();      Console.WriteLine(i.CreatedAt);
+                            Color.Green();      Console.WriteLine(i.CreatedAt.ToLongTimeString());
                             Console.ResetColor();
                             zipUrl = i.ArchiveUrl;
                             break;
@@ -495,7 +495,9 @@ namespace OGInjector
             {
                 using FileStream zipStream = new(tempFile, FileMode.Truncate);
                 await zipStream.WriteAsync(await httpClient.GetByteArrayAsync(downloadResponse.RequestMessage.RequestUri));
-
+                if (File.Exists(outputDll))
+                    File.Delete(outputDll);
+                zipStream.Close();
                 ZipFile.ExtractToDirectory(tempFile, Directory.GetCurrentDirectory(), true);
             }
             catch (Exception e)
