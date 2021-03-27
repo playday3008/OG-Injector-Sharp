@@ -219,7 +219,7 @@ namespace OGInjector
         [JsonPropertyName("id")]
         public int ID { get; set; }
         [JsonPropertyName("node_id")]
-        public string NodeIDBase64 { get; set; }
+        public string NodeID { get; set; }
         [JsonPropertyName("name")]
         public string Name { get; set; }
         [JsonPropertyName("size_in_bytes")]
@@ -455,7 +455,7 @@ namespace OGInjector
                                 Color.DarkGreen();  Console.Write("Update available for: ");
                                 Color.Green();      Console.WriteLine(outputDll);
                                 Color.DarkGreen();  Console.Write("Created at: ");
-                                Color.Green();      Console.WriteLine(i.CreatedAt.ToLongTimeString());
+                                Color.Green();      Console.WriteLine(i.CreatedAt.ToLocalTime());
                                 Console.ResetColor();
                                 zipUrl = i.ArchiveUrl;
                                 break;
