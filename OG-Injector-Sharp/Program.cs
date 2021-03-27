@@ -340,20 +340,31 @@ namespace OGInjector
             httpClient.DefaultRequestHeaders.Authorization = new("token", "6ab7fad6f911037ce34796c383a33bedc09cae3b"); // GitHub personal access token with "public_repo" premission
             httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
             httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("OG-Injector-Sharp");
-            HttpResponseMessage response;
+            HttpResponseMessage response = null;
+            HttpRequestException exception = null;
+            bool forbidden = false;
             try
             {
                 response = await httpClient.GetAsync(githubApiString);
+            }
+            catch (HttpRequestException e)
+            {
+                exception = e;
+                forbidden = true;
             }
             catch (Exception e)
             {
                 Exception(e);
                 return false;
             }
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode || forbidden)
             {
                 Color.DarkRed();    Console.Write("Can't connect to GitHub API. Returned code: ");
-                Color.Red();        Console.WriteLine(response.StatusCode);
+                Color.Red();       
+                if (forbidden)
+                    Console.WriteLine(exception.StatusCode);
+                else
+                    Console.WriteLine(response.StatusCode);
                 Console.ResetColor();
                 if (File.Exists(outputDll))
                 {
@@ -393,7 +404,20 @@ namespace OGInjector
                         return true;
                     }
                 }
-                return false;
+                else
+                {
+                    Color.DarkYellow(); Console.Write("Skipping checking for updates, because there is no connection to GitHub, and \"");
+                    Color.Yellow(); Console.Write(outputDll);
+                    Color.DarkYellow(); Console.WriteLine("\" is missing so, exiting");
+                    Console.ResetColor();
+                    return false;
+                }
+            }
+            else
+            {
+                Color.DarkGreen(); Console.Write("Connected to GitHub API. Returned code: ");
+                Console.WriteLine(response.StatusCode);
+                Console.ResetColor();
             }
 
             JsonDocument jsonParsed;
@@ -438,8 +462,7 @@ namespace OGInjector
                         }
                     }
                 }
-                if ((File.GetAttributes(latestFileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-                    File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed);
+                File.SetAttributes(latestFileName, FileAttributes.Normal);
                 await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
                 File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
             }
@@ -519,8 +542,7 @@ namespace OGInjector
                 using SHA512CryptoServiceProvider cryptoProvider = new();
                 string hash = BitConverter.ToString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
 
-                if ((File.GetAttributes(latestFileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-                    File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed);
+                File.SetAttributes(latestFileName, FileAttributes.Normal);
                 await File.AppendAllTextAsync(latestFileName, "\n" + hash, Encoding.Unicode);
                 File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
             }
