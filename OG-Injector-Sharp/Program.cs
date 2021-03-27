@@ -1,4 +1,4 @@
-﻿#define OSIRIS
+﻿//#define OSIRIS
 //#define GOESP
 //#define BETA
 
