@@ -265,8 +265,8 @@ namespace OGInjector
                 Marshal.Copy(ntOpenFile, originalBytes, 0, 5);
                 if (!WinAPI.WriteProcessMemory(process.Handle, ntOpenFile, originalBytes, 5, out _))
                 {
-                    Color.DarkRed(); Console.WriteLine("Can't write original NtOpenFile bytes to ");
-                    Color.Red(); Console.WriteLine(processName);
+                    Color.DarkRed();    Console.WriteLine("Can't write original NtOpenFile bytes to ");
+                    Color.Red();        Console.WriteLine(processName);
                     Console.ResetColor();
                     Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
                     return false;
@@ -310,230 +310,202 @@ namespace OGInjector
 
         private static async Task<bool> GetDllIfOutdated(string outputDll)
         {
-            string githubApiString = "https://api.github.com/repos/playday3008/";
-            string latestFileName = null;
             try
             {
-                latestFileName = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.OG-Injector-";
-            }
-            catch (Exception e)
-            {
-                Exception(e);
-                return false;
-            }
+                string githubApiString = "https://api.github.com/repos/playday3008/";
+                string latestFileName = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.OG-Injector-";
 
-        #if OSIRIS || GOESP
-            if (outputDll.Contains("Osiris"))
-            {
-                githubApiString += "Osiris";
-                latestFileName += "Osiris";
-            }
-            else if (outputDll.Contains("GOESP"))
-            {
-                githubApiString += "GOESP";
-                latestFileName += "GOESP";
-            }
-        #endif
-
-            githubApiString += "/actions/artifacts";
-
-            httpClient.DefaultRequestHeaders.Authorization = new("token", "6ab7fad6f911037ce34796c383a33bedc09cae3b"); // GitHub personal access token with "public_repo" premission
-            httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
-            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("OG-Injector-Sharp");
-            HttpResponseMessage response = null;
-            try
-            {
-                response = await httpClient.GetAsync(githubApiString);
-            }
-            catch (Exception e)
-            {
-                Exception(e);
-                return false;
-            }
-            if (!response.IsSuccessStatusCode)
-            {
-                Color.DarkRed();    Console.Write("Can't connect to GitHub API. Returned code: ");
-                Color.Red();        Console.WriteLine(response.StatusCode);
-                Console.ResetColor();
-                if (File.Exists(outputDll))
+            #if OSIRIS || GOESP
+                if (outputDll.Contains("Osiris"))
                 {
-                    if (File.Exists(latestFileName))
+                    githubApiString += "Osiris";
+                    latestFileName += "Osiris";
+                }
+                else if (outputDll.Contains("GOESP"))
+                {
+                    githubApiString += "GOESP";
+                    latestFileName += "GOESP";
+                }
+            #endif
+
+                githubApiString += "/actions/artifacts";
+
+                httpClient.DefaultRequestHeaders.Authorization = new("token", "6ab7fad6f911037ce34796c383a33bedc09cae3b"); // GitHub personal access token with "public_repo" premission
+                httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("OG-Injector-Sharp");
+                HttpResponseMessage response = null;
+                response = await httpClient.GetAsync(githubApiString);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Color.DarkRed();    Console.Write("Can't connect to GitHub API. Returned code: ");
+                    Color.Red();        Console.WriteLine(response.StatusCode);
+                    Console.ResetColor();
+                    if (File.Exists(outputDll))
                     {
-                        IEnumerable<string> readed = await Task.Run(() => File.ReadLines(latestFileName, Encoding.Unicode));
-                        List<string> readedAsList = readed.ToList();
-
-                        using SHA512CryptoServiceProvider cryptoProvider = new();
-                        string hash = BitConverter.ToString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
-
-                        if (hash == readedAsList[1])
+                        if (File.Exists(latestFileName))
                         {
-                            Color.DarkYellow(); Console.Write("Skipping checking for updates, because there is no connection to GitHub, but \"");
-                            Color.Yellow();     Console.Write(outputDll);
-                            Color.DarkYellow(); Console.WriteLine("\" was found and SHA512 checksum matched");
-                            Console.ResetColor();
-                            return true;
-                        }
-                        else
-                        {
-                            Color.DarkYellow(); Console.Write("Skipping checking for updates, because there is no connection to GitHub, but \"");
-                            Color.Yellow();     Console.Write(outputDll);
+                            IEnumerable<string> readed = await Task.Run(() => File.ReadLines(latestFileName, Encoding.Unicode));
+                            List<string> readedAsList = readed.ToList();
+
+                            if (readedAsList.Count > 1)
+                            {
+                                using SHA512CryptoServiceProvider cryptoProvider = new();
+                                string hash = BitConverter.ToString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
+
+                                Color.DarkYellow(); Console.Write("Skipping checking for updates, because there is no connection to GitHub, but \"");
+                                Color.Yellow();     Console.Write(outputDll);
+
+                                if (hash == readedAsList[1])
+                                {
+                                    Color.DarkYellow(); Console.WriteLine("\" was found and SHA512 checksum matched");
+                                    Console.ResetColor();
+                                    return true;
+                                }
+                            }
                             Color.DarkYellow(); Console.Write("\" was found but SHA512 checksum");
                             Color.Red();        Console.Write(" NOT ");
                             Color.DarkYellow(); Console.WriteLine("matched");
                             Console.ResetColor();
                             return true;
                         }
+                        else
+                        {
+                            Color.DarkYellow(); Console.Write("Skipping checking for updates, because there is no connection to GitHub, but \"");
+                            Color.Yellow();     Console.Write(outputDll);
+                            Color.DarkYellow(); Console.WriteLine("\" was found");
+                            Console.ResetColor();
+                            return true;
+                        }
                     }
                     else
                     {
-                        Color.DarkYellow(); Console.Write("Skipping checking for updates, because there is no connection to GitHub, but \"");
+                        Color.DarkYellow(); Console.Write("Skipping checking for updates, because there is no connection to GitHub, and \"");
                         Color.Yellow();     Console.Write(outputDll);
-                        Color.DarkYellow(); Console.WriteLine("\" was found");
+                        Color.DarkYellow(); Console.WriteLine("\" is missing so, exiting");
                         Console.ResetColor();
-                        return true;
+                        return false;
                     }
                 }
                 else
                 {
-                    Color.DarkYellow(); Console.Write("Skipping checking for updates, because there is no connection to GitHub, and \"");
-                    Color.Yellow(); Console.Write(outputDll);
-                    Color.DarkYellow(); Console.WriteLine("\" is missing so, exiting");
+                    Color.DarkGreen(); Console.Write("Connected to GitHub API. Returned code: ");
+                    Console.WriteLine(response.StatusCode);
                     Console.ResetColor();
-                    return false;
                 }
-            }
-            else
-            {
-                Color.DarkGreen(); Console.Write("Connected to GitHub API. Returned code: ");
-                Console.WriteLine(response.StatusCode);
-                Console.ResetColor();
-            }
 
-            JsonDocument jsonParsed;
-            Actions actions;
-            try
-            {
-                jsonParsed = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-                actions = await Task.Run(() => JsonSerializer.Deserialize<Actions>(jsonParsed.RootElement.GetRawText()));
-            }
-            catch (Exception e)
-            {
-                Exception(e);
-                return false;
-            }
+                JsonDocument jsonParsed = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+                Actions actions = await Task.Run(() => JsonSerializer.Deserialize<Actions>(jsonParsed.RootElement.GetRawText()));
 
-            if (File.Exists(latestFileName))
-            {
-                IEnumerable<string> readed = await Task.Run(() => File.ReadLines(latestFileName, Encoding.Unicode));
-                List<string> readedAsList = readed.ToList();
-                if (actions.Count == Convert.ToInt32(readedAsList[0]))
+                if (File.Exists(latestFileName))
                 {
-                    if (File.Exists(outputDll))
+                    IEnumerable<string> readed = await Task.Run(() => File.ReadLines(latestFileName, Encoding.Unicode));
+                    List<string> readedAsList = readed.ToList();
+                    if (actions.Count == Convert.ToInt32(readedAsList[0]))
                     {
-                        using SHA512CryptoServiceProvider cryptoProvider = new();
-                        string hash = BitConverter.ToString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
+                        if (File.Exists(outputDll))
+                        {
+                            if (readedAsList.Count > 1)
+                            {
+                                using SHA512CryptoServiceProvider cryptoProvider = new();
+                                string hash = BitConverter.ToString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
 
-                        if (hash == readedAsList[1])
-                        {
-                            Color.DarkGreen();  Console.Write("No updates for: ");
-                            Color.Green();      Console.WriteLine(outputDll);
-                            Color.DarkGreen();  Console.Write("SHA512 checksum matched: ");
-                            Color.Green();      Console.WriteLine(hash.Replace("-", string.Empty));
-                            Console.ResetColor();
-                            return true;
-                        }
-                        else
-                        {
+                                if (hash == readedAsList[1])
+                                {
+                                    Color.DarkGreen();  Console.Write("No updates for: ");
+                                    Color.Green();      Console.WriteLine(outputDll);
+                                    Color.DarkGreen();  Console.Write("SHA512 checksum matched: ");
+                                    Color.Green();      Console.WriteLine(hash.Replace("-", string.Empty));
+                                    Console.ResetColor();
+                                    return true;
+                                }
+                            }
                             Color.DarkGreen();  Console.Write("No updates for: ");
                             Color.Green();      Console.WriteLine(outputDll);
                             Color.DarkYellow(); Console.WriteLine("But SHA512 checksum NOT matched, redownloading");
                             Console.ResetColor();
                         }
                     }
+                    File.SetAttributes(latestFileName, FileAttributes.Normal);
+                    await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
+                    File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
                 }
-                File.SetAttributes(latestFileName, FileAttributes.Normal);
-                await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
-                File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
-            }
-            else
-            {
-                await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
-                File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
-            }
-
-            Uri zipUrl = null;
-            foreach (Artifacts i in actions.Artifacts)
-            {
-                if (i.Name.Contains("Windows"))
-            #if OSIRIS || GOESP
-                    if (i.Name.Contains("BETA") == outputDll.Contains("BETA"))
-                    if ((outputDll.Contains("SSE2") && i.Name.Contains("SSE2")) || (outputDll.Contains("AVX.") && i.Name.Contains("AVX") && !i.Name.EndsWith('2')) || (outputDll.Contains("AVX2") && i.Name.Contains("AVX2")))
-            #endif
-                        {
-                            if (i.Experied)
-                            {
-                                Color.DarkYellow(); Console.Write("There is no downloadable \"");
-                                Color.Yellow();     Console.Write(outputDll);
-                                Color.DarkYellow(); Console.WriteLine("\" at the moment");
-                                Console.ResetColor();
-                                return false;
-                            }
-                            Color.DarkGreen();  Console.Write("Update available for: ");
-                            Color.Green();      Console.WriteLine(outputDll);
-                            Color.DarkGreen();  Console.Write("Created at: ");
-                            Color.Green();      Console.WriteLine(i.CreatedAt.ToLongTimeString());
-                            Console.ResetColor();
-                            zipUrl = i.ArchiveUrl;
-                            break;
-                        }
-            }
-
-            HttpResponseMessage downloadResponse = await httpClient.GetAsync(zipUrl);
-            if (downloadResponse.IsSuccessStatusCode)
-            {
-                Color.DarkGreen();  Console.Write("Downloading latest: ");
-                Color.Green();      Console.WriteLine(outputDll);
-                Console.ResetColor();
-            }
-            else
-            {
-                Color.DarkRed();    Console.Write("Cant download latest ");
-                Color.Red();        Console.WriteLine(outputDll);
-                Console.ResetColor();
-                if (File.Exists(outputDll))
+                else
                 {
-                    Color.DarkYellow();
-                    Console.WriteLine("Use available dll instead");
-                    Console.ResetColor();
-                    return true;
+                    await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
+                    File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
                 }
-                return false;
-            }
 
-            string tempFile = Path.GetTempFileName();
+                Uri zipUrl = null;
+                foreach (Artifacts i in actions.Artifacts)
+                {
+                    if (i.Name.Contains("Windows"))
+                #if OSIRIS || GOESP
+                        if (i.Name.Contains("BETA") == outputDll.Contains("BETA"))
+                            if ((outputDll.Contains("SSE2") && i.Name.Contains("SSE2")) || (outputDll.Contains("AVX.") && i.Name.Contains("AVX") && !i.Name.EndsWith('2')) || (outputDll.Contains("AVX2") && i.Name.Contains("AVX2")))
+                #endif
+                            {
+                                if (i.Experied)
+                                {
+                                    Color.DarkYellow(); Console.Write("There is no downloadable \"");
+                                    Color.Yellow();     Console.Write(outputDll);
+                                    Color.DarkYellow(); Console.WriteLine("\" at the moment");
+                                    Console.ResetColor();
+                                    return false;
+                                }
+                                Color.DarkGreen();  Console.Write("Update available for: ");
+                                Color.Green();      Console.WriteLine(outputDll);
+                                Color.DarkGreen();  Console.Write("Created at: ");
+                                Color.Green();      Console.WriteLine(i.CreatedAt.ToLongTimeString());
+                                Console.ResetColor();
+                                zipUrl = i.ArchiveUrl;
+                                break;
+                            }
+                }
 
-            try
-            {
+                HttpResponseMessage downloadResponse = await httpClient.GetAsync(zipUrl);
+                if (downloadResponse.IsSuccessStatusCode)
+                {
+                    Color.DarkGreen();  Console.Write("Downloading latest: ");
+                    Color.Green();      Console.WriteLine(outputDll);
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Color.DarkRed();    Console.Write("Cant download latest ");
+                    Color.Red();        Console.WriteLine(outputDll);
+                    Console.ResetColor();
+                    if (File.Exists(outputDll))
+                    {
+                        Color.DarkYellow();
+                        Console.WriteLine("Use available dll instead");
+                        Console.ResetColor();
+                        return true;
+                    }
+                    return false;
+                }
+
+                string tempFile = Path.GetTempFileName();
+
                 using FileStream zipStream = new(tempFile, FileMode.Truncate);
                 await zipStream.WriteAsync(await httpClient.GetByteArrayAsync(downloadResponse.RequestMessage.RequestUri));
                 zipStream.Close();
-                if (File.Exists(outputDll))
-                    File.Delete(outputDll);
+
+                File.SetAttributes(outputDll, FileAttributes.Normal);
                 ZipFile.ExtractToDirectory(tempFile, Directory.GetCurrentDirectory(), true);
+
+                {
+                    using SHA512CryptoServiceProvider cryptoProvider = new();
+                    string hash = BitConverter.ToString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
+
+                    File.SetAttributes(latestFileName, FileAttributes.Normal);
+                    await File.AppendAllTextAsync(latestFileName, "\n" + hash, Encoding.Unicode);
+                    File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
+                }
             }
             catch (Exception e)
             {
                 Exception(e);
                 return false;
-            }
-
-            {
-                using SHA512CryptoServiceProvider cryptoProvider = new();
-                string hash = BitConverter.ToString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
-
-                File.SetAttributes(latestFileName, FileAttributes.Normal);
-                await File.AppendAllTextAsync(latestFileName, "\n" + hash, Encoding.Unicode);
-                File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
             }
 
             return true;
@@ -543,17 +515,17 @@ namespace OGInjector
         {
             Console.OutputEncoding = Encoding.Unicode;
             Console.Title = "OG Injector by PlayDay";
-            Color.Red();     Console.WriteLine(@"   ____  ______   ____        _           __            "); Thread.Sleep(50);
-            Color.Green();   Console.WriteLine(@"  / __ \/ ____/  /  _/___    (_)__  _____/ /_____  _____"); Thread.Sleep(50);
-            Color.Yellow();  Console.WriteLine(@" / / / / / __    / // __ \  / / _ \/ ___/ __/ __ \/ ___/"); Thread.Sleep(50);
-            Color.Blue();    Console.WriteLine(@"/ /_/ / /_/ /  _/ // / / / / /  __/ /__/ /_/ /_/ / /    "); Thread.Sleep(50);
-            Color.Magenta(); Console.WriteLine(@"\____/\____/  /___/_/ /_/_/ /\___/\___/\__/\____/_/     "); Thread.Sleep(50);
-            Color.Cyan();    Console.WriteLine(@"    ____  __           /___/                   __ __    "); Thread.Sleep(50);
-            Color.Red();     Console.WriteLine(@"   / __ \/ /___ ___  __/ __ \____ ___  __   __/ // /_   "); Thread.Sleep(50);
-            Color.Green();   Console.WriteLine(@"  / /_/ / / __ `/ / / / / / / __ `/ / / /  /_  _  __/   "); Thread.Sleep(50);
-            Color.Yellow();  Console.WriteLine(@" / ____/ / /_/ / /_/ / /_/ / /_/ / /_/ /  /_  _  __/    "); Thread.Sleep(50);
-            Color.Blue();    Console.WriteLine(@"/_/   /_/\__,_/\__, /_____/\__,_/\__, /    /_//_/       "); Thread.Sleep(50);
-            Color.Magenta(); Console.WriteLine(@"              /____/            /____/                  "); Thread.Sleep(50);
+            Color.Red();        Console.WriteLine(@"   ____  ______   ____        _           __            "); Thread.Sleep(50);
+            Color.Green();      Console.WriteLine(@"  / __ \/ ____/  /  _/___    (_)__  _____/ /_____  _____"); Thread.Sleep(50);
+            Color.Yellow();     Console.WriteLine(@" / / / / / __    / // __ \  / / _ \/ ___/ __/ __ \/ ___/"); Thread.Sleep(50);
+            Color.Blue();       Console.WriteLine(@"/ /_/ / /_/ /  _/ // / / / / /  __/ /__/ /_/ /_/ / /    "); Thread.Sleep(50);
+            Color.Magenta();    Console.WriteLine(@"\____/\____/  /___/_/ /_/_/ /\___/\___/\__/\____/_/     "); Thread.Sleep(50);
+            Color.Cyan();       Console.WriteLine(@"    ____  __           /___/                   __ __    "); Thread.Sleep(50);
+            Color.Red();        Console.WriteLine(@"   / __ \/ /___ ___  __/ __ \____ ___  __   __/ // /_   "); Thread.Sleep(50);
+            Color.Green();      Console.WriteLine(@"  / /_/ / / __ `/ / / / / / / __ `/ / / /  /_  _  __/   "); Thread.Sleep(50);
+            Color.Yellow();     Console.WriteLine(@" / ____/ / /_/ / /_/ / /_/ / /_/ / /_/ /  /_  _  __/    "); Thread.Sleep(50);
+            Color.Blue();       Console.WriteLine(@"/_/   /_/\__,_/\__, /_____/\__,_/\__, /    /_//_/       "); Thread.Sleep(50);
+            Color.Magenta();    Console.WriteLine(@"              /____/            /____/                  "); Thread.Sleep(50);
             Console.WriteLine();
             Console.ResetColor();
 
@@ -578,8 +550,8 @@ namespace OGInjector
                 dllname += "_SSE2.dll";
             else
             {
-                Color.DarkRed(); Console.WriteLine("Unsupported CPU intrinsics!");
-                Color.White();   Console.WriteLine("Press any key to continue...");
+                Color.DarkRed();    Console.WriteLine("Unsupported CPU intrinsics!");
+                Color.White();      Console.WriteLine("Press any key to continue...");
                 Console.ResetColor();
                 Console.ReadKey();
                 return 1;
