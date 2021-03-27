@@ -209,7 +209,7 @@ namespace OGInjector
 
     class Program
     {
-        static bool Bypass(Process process, string processName)
+        private static bool Bypass(Process process, string processName)
         {
             IntPtr ntdll = WinAPI.LoadLibraryW("ntdll");
             if (ntdll == IntPtr.Zero)
