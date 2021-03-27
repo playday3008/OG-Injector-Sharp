@@ -212,7 +212,6 @@ namespace OGInjector
         }
     }
 
-#if OSIRIS || GOESP
     class Artifacts
     {
         [JsonPropertyName("id")]
@@ -244,7 +243,6 @@ namespace OGInjector
         [JsonPropertyName("artifacts")]
         public Artifacts[] Artifacts { get; set; }
     }
-#endif
 
     class Program
     {
@@ -282,7 +280,6 @@ namespace OGInjector
             }
         }
 
-    #if OSIRIS || GOESP
         static readonly HttpClient httpClient = new();
 
         static async Task<bool> GetDllIfOutdated(string outputDll)
@@ -290,6 +287,7 @@ namespace OGInjector
             string githubApiString = "https://api.github.com/repos/playday3008/";
             string latestFileName = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + ".OG-Injector-";
 
+        #if OSIRIS || GOESP
             if (outputDll.Contains("Osiris"))
             {
                 githubApiString += "Osiris";
@@ -300,6 +298,7 @@ namespace OGInjector
                 githubApiString += "GOESP";
                 latestFileName += "GOESP";
             }
+        #endif
 
             githubApiString += "/actions/artifacts";
 
@@ -309,19 +308,14 @@ namespace OGInjector
             HttpResponseMessage response = await httpClient.GetAsync(githubApiString);
             if (!response.IsSuccessStatusCode)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write("Can't connect to GitHub API. Returned code: ");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(response.StatusCode);
+                Color.DarkRed();    Console.Write("Can't connect to GitHub API. Returned code: ");
+                Color.Red();        Console.WriteLine(response.StatusCode);
                 Console.ResetColor();
                 if (File.Exists(outputDll))
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine("Skipping checking for updates, because there is no connection to GitHub, but \"");
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(outputDll);
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine("\" was found");
+                    Color.DarkYellow(); Console.WriteLine("Skipping checking for updates, because there is no connection to GitHub, but \"");
+                    Color.Yellow();     Console.WriteLine(outputDll);
+                    Color.DarkYellow(); Console.WriteLine("\" was found");
                     Console.ResetColor();
                     return true;
                 }
@@ -337,10 +331,8 @@ namespace OGInjector
                 {
                     if (File.Exists(outputDll))
                     {
-                        Console.ForegroundColor = ConsoleColor.DarkGreen;
-                        Console.Write("No updates for: ");
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine(outputDll);
+                        Color.DarkGreen();  Console.Write("No updates for: ");
+                        Color.Green();      Console.WriteLine(outputDll);
                         Console.ResetColor();
                         return true;
                     }
@@ -362,28 +354,23 @@ namespace OGInjector
             foreach (Artifacts i in actions.Artifacts)
             {
                 if (i.Name.Contains("Windows"))
+            #if OSIRIS || GOESP
                     if (i.Name.Contains("BETA") == outputDll.Contains("BETA"))
-                        if ((outputDll.Contains("SSE2") && i.Name.Contains("SSE2")) || (outputDll.Contains("AVX.") && i.Name.Contains("AVX") && !i.Name.EndsWith('2')) || (outputDll.Contains("AVX2") && i.Name.Contains("AVX2")))
+                    if ((outputDll.Contains("SSE2") && i.Name.Contains("SSE2")) || (outputDll.Contains("AVX.") && i.Name.Contains("AVX") && !i.Name.EndsWith('2')) || (outputDll.Contains("AVX2") && i.Name.Contains("AVX2")))
+            #endif
                         {
                             if (i.Experied)
                             {
-                                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                                Console.Write("There is no downloadable \"");
-                                Console.ForegroundColor = ConsoleColor.Yellow;
-                                Console.Write(outputDll);
-                                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                                Console.WriteLine("\" at the moment");
+                                Color.DarkYellow(); Console.Write("There is no downloadable \"");
+                                Color.Yellow();     Console.Write(outputDll);
+                                Color.DarkYellow(); Console.WriteLine("\" at the moment");
                                 Console.ResetColor();
                                 return false;
                             }
-                            Console.ForegroundColor = ConsoleColor.DarkGreen;
-                            Console.Write("Update available for: ");
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine(outputDll);
-                            Console.ForegroundColor = ConsoleColor.DarkGreen;
-                            Console.Write("Creation date: ");
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine(i.CreatedAt);
+                            Color.DarkGreen();  Console.Write("Update available for: ");
+                            Color.Green();      Console.WriteLine(outputDll);
+                            Color.DarkGreen();  Console.Write("Creation date: ");
+                            Color.Green();      Console.WriteLine(i.CreatedAt);
                             Console.ResetColor();
                             zipUrl = i.ArchiveUrl;
                             break;
@@ -393,22 +380,18 @@ namespace OGInjector
             HttpResponseMessage downloadResponse = await httpClient.GetAsync(zipUrl);
             if (downloadResponse.IsSuccessStatusCode)
             {
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.Write("Downloaded latest: ");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(outputDll);
+                Color.DarkGreen();  Console.Write("Downloaded latest: ");
+                Color.Green();      Console.WriteLine(outputDll);
                 Console.ResetColor();
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write("Cant download latest ");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(outputDll);
+                Color.DarkRed();    Console.Write("Cant download latest ");
+                Color.Red();        Console.WriteLine(outputDll);
                 Console.ResetColor();
                 if (File.Exists(outputDll))
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Color.DarkYellow();
                     Console.WriteLine("Use available dll instead");
                     Console.ResetColor();
                     return true;
@@ -427,7 +410,6 @@ namespace OGInjector
 
             return true;
         }
-    #endif
 
         static async Task<int> Main(string[] args)
         {
@@ -473,6 +455,7 @@ namespace OGInjector
                 Console.ReadKey();
                 return 1;
             }
+        #endif
 
             Color.DarkYellow();
             Console.WriteLine("Checking for " + dllname + " updates");
@@ -485,7 +468,6 @@ namespace OGInjector
                 Console.ReadKey();
                 return 1;
             }
-        #endif
 
             if (File.Exists(dllname))
             {
