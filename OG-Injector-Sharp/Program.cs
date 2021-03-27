@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -329,6 +330,7 @@ namespace OGInjector
                 Color.Green();       Console.Write(processName);
                 Color.DarkGreen();   Console.Write(" found with PID's:");
                 int pcounter = 0;
+                processes = processes.OrderBy(f => f.StartTime).ToArray();
                 foreach (Process p in processes)
                 {
                     pcounter++;
@@ -342,7 +344,7 @@ namespace OGInjector
                     else
                         Console.WriteLine(';');
                 }
-                Color.DarkYellow();  Console.Write("Used the latest PID available in the list above: ");
+                Color.DarkYellow();  Console.Write("Use the latest started process available in the list above: ");
                 Color.Yellow();      Console.WriteLine(processes[^1].Id);
                 Console.ResetColor();
             }
