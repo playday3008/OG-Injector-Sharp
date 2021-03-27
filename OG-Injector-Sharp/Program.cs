@@ -350,7 +350,7 @@ namespace OGInjector
                         List<string> readedAsList = readed.ToList();
 
                         using SHA512CryptoServiceProvider cryptoProvider = new();
-                        string hash = Encoding.Unicode.GetString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
+                        string hash = BitConverter.ToString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
 
                         if (hash == readedAsList[1])
                         {
@@ -405,14 +405,14 @@ namespace OGInjector
                     if (File.Exists(outputDll))
                     {
                         using SHA512CryptoServiceProvider cryptoProvider = new();
-                        string hash = Encoding.Unicode.GetString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
+                        string hash = BitConverter.ToString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
 
                         if (hash == readedAsList[1])
                         {
                             Color.DarkGreen();  Console.Write("No updates for: ");
                             Color.Green();      Console.WriteLine(outputDll);
                             Color.DarkGreen();  Console.Write("SHA512 checksum matched: ");
-                            Color.Green();      Console.WriteLine(hash);
+                            Color.Green();      Console.WriteLine(hash.Replace("-", string.Empty));
                             Console.ResetColor();
                             return true;
                         }
@@ -425,13 +425,10 @@ namespace OGInjector
                         }
                     }
                 }
-                else
-                {
-                    if ((File.GetAttributes(latestFileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-                        File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed);
-                    await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
-                    File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
-                }
+                if ((File.GetAttributes(latestFileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                    File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed);
+                await File.WriteAllTextAsync(latestFileName, actions.Count.ToString(), Encoding.Unicode);
+                File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed | FileAttributes.ReadOnly);
             }
             else
             {
@@ -508,7 +505,7 @@ namespace OGInjector
 
             {
                 using SHA512CryptoServiceProvider cryptoProvider = new();
-                string hash = Encoding.Unicode.GetString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
+                string hash = BitConverter.ToString(cryptoProvider.ComputeHash(File.OpenRead(outputDll)));
 
                 if ((File.GetAttributes(latestFileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
                     File.SetAttributes(latestFileName, FileAttributes.Hidden | FileAttributes.NotContentIndexed);
