@@ -13,30 +13,29 @@ namespace OGInjector
 {
     class WinAPI
     {
-    #pragma warning disable CA1069 // Значения перечислений не должны повторяться
         [Flags]
         public enum AllocationType : uint
         {
             MEM_UNMAP_WITH_TRANSIENT_BOOST = 0x00000001,
-            MEM_COALESCE_PLACEHOLDERS = 0x00000001,
+            MEM_COALESCE_PLACEHOLDERS = MEM_UNMAP_WITH_TRANSIENT_BOOST,
             MEM_PRESERVE_PLACEHOLDER = 0x00000002,
             MEM_COMMIT = 0x00001000,
             MEM_RESERVE = 0x00002000,
             MEM_REPLACE_PLACEHOLDER = 0x00004000,
-            MEM_DECOMMIT = 0x00004000,
+            MEM_DECOMMIT = MEM_REPLACE_PLACEHOLDER,
             MEM_RELEASE = 0x00008000,
             MEM_FREE = 0x00010000,
             MEM_PRIVATE = 0x00020000,
             MEM_RESERVE_PLACEHOLDER = 0x00040000,
-            MEM_MAPPED = 0x00040000,
+            MEM_MAPPED = MEM_RESERVE_PLACEHOLDER,
             MEM_RESET = 0x00080000,
             MEM_TOP_DOWN = 0x00100000,
             MEM_WRITE_WATCH = 0x00200000,
             MEM_PHYSICAL = 0x00400000,
             MEM_ROTATE = 0x00800000,
-            MEM_DIFFERENT_IMAGE_BASE_OK = 0x00800000,
+            MEM_DIFFERENT_IMAGE_BASE_OK = MEM_ROTATE,
             MEM_IMAGE = 0x01000000,
-            MEM_RESET_UNDO = 0x01000000,
+            MEM_RESET_UNDO = MEM_IMAGE,
             MEM_LARGE_PAGES = 0x20000000,
             MEM_4MB_PAGES = 0x80000000,
             MEM_64K_PAGES = MEM_LARGE_PAGES | MEM_PHYSICAL
@@ -65,16 +64,15 @@ namespace OGInjector
             PAGE_GRAPHICS_COHERENT = 0x20000,
             PAGE_GRAPHICS_NOCACHE = 0x40000,
             PAGE_ENCLAVE_THREAD_CONTROL = 0x80000000,
-            PAGE_REVERT_TO_FILE_MAP = 0x80000000,
+            PAGE_REVERT_TO_FILE_MAP = PAGE_ENCLAVE_THREAD_CONTROL,
             PAGE_TARGETS_NO_UPDATE = 0x40000000,
-            PAGE_TARGETS_INVALID = 0x40000000,
+            PAGE_TARGETS_INVALID = PAGE_TARGETS_NO_UPDATE,
             PAGE_ENCLAVE_UNVALIDATED = 0x20000000,
             PAGE_ENCLAVE_MASK = 0x10000000,
-            PAGE_ENCLAVE_DECOMMIT = PAGE_ENCLAVE_MASK | 0,
+            PAGE_ENCLAVE_DECOMMIT = PAGE_ENCLAVE_MASK,
             PAGE_ENCLAVE_SS_FIRST = PAGE_ENCLAVE_MASK | 1,
             PAGE_ENCLAVE_SS_REST = PAGE_ENCLAVE_MASK | 2
         }
-    #pragma warning restore CA1069 // Значения перечислений не должны повторяться
 
         [DllImport("kernel32.dll", BestFitMapping = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "GetModuleHandleW", ExactSpelling = true, PreserveSig = true, SetLastError = true, ThrowOnUnmappableChar = true)]
         public static extern IntPtr GetModuleHandleW(
