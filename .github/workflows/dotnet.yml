@@ -28,10 +28,10 @@ jobs:
       run: dotnet restore
       
     - name: Build x86
-      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\${{ matrix.cheat }} Release x86.pubxml"
+      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\${{ matrix.release }} Release x86.pubxml"
       
     - name: Build x86 Portable
-      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\${{ matrix.cheat }} Release x86 Portable.pubxml"
+      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\${{ matrix.release }} Release x86 Portable.pubxml"
 
     - name: Upload x86
       uses: actions/upload-artifact@v2
