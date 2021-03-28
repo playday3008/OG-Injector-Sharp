@@ -226,7 +226,7 @@ namespace OGInjector
                 Marshal.Copy(ntOpenFile, originalBytes, 0, 5);
                 if (!WinAPI.WriteProcessMemory(process.Handle, ntOpenFile, originalBytes, 5, out _))
                 {
-                    Color.DarkRed();    Console.WriteLine("Can't write original NtOpenFile bytes to ");
+                    Color.DarkRed();    Console.Write("Can't write original NtOpenFile bytes to ");
                     Color.Red();        Console.WriteLine(processName);
                     Console.ResetColor();
                     Console.WriteLine("Catched error code: " + Marshal.GetLastWin32Error());
@@ -359,7 +359,12 @@ namespace OGInjector
             }
 
             if (!Bypass(processes[^1], processName))
+            {
+                Color.White(); Console.WriteLine("Press any key to continue...");
+                Console.ResetColor();
+                Console.ReadKey();
                 return 1;
+            }
 
             string dllPath = Path.GetFullPath(dllname);
 
