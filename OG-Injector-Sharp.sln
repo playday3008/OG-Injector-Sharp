@@ -8,6 +8,7 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
 		GOESP BETA Debug|Any CPU = GOESP BETA Debug|Any CPU
 		GOESP BETA Release|Any CPU = GOESP BETA Release|Any CPU
 		GOESP Debug|Any CPU = GOESP Debug|Any CPU
@@ -16,11 +17,12 @@ Global
 		Osiris Release|Any CPU = Osiris Release|Any CPU
 		OsirisBETA Debug|Any CPU = OsirisBETA Debug|Any CPU
 		OsirisBETA Release|Any CPU = OsirisBETA Release|Any CPU
-		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.GOESP BETA Debug|Any CPU.ActiveCfg = GOESP BETA Debug|Any CPU
 		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.GOESP BETA Debug|Any CPU.Build.0 = GOESP BETA Debug|Any CPU
 		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.GOESP BETA Release|Any CPU.ActiveCfg = GOESP BETA Release|Any CPU
@@ -37,8 +39,6 @@ Global
 		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.OsirisBETA Debug|Any CPU.Build.0 = OsirisBETA Debug|Any CPU
 		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.OsirisBETA Release|Any CPU.ActiveCfg = OsirisBETA Release|Any CPU
 		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.OsirisBETA Release|Any CPU.Build.0 = OsirisBETA Release|Any CPU
-		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{55B67716-4F07-4545-9EAD-0C0A99A725C7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
