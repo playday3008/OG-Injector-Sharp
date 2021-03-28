@@ -55,3 +55,41 @@ jobs:
       with:
         name: OG-Injector-Sharp-x64-Portable
         path: OG-Injector-Sharp/bin/Release/net5.0/publish/portable/x64/OG-Injector-Sharp.exe
+
+  OsirisGOESP:
+
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        release:
+          - Osiris Release
+          - GOESP Release
+          - OsirisBETA Release
+          - GOESP BETA Release
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build x86
+      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\${{ matrix.release }} x86.pubxml"
+      
+    - name: Build x86 Portable
+      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\${{ matrix.release }} x86 Portable.pubxml"
+
+    - name: Upload ${{ matrix.release }} x86
+      uses: actions/upload-artifact@v2
+      with:
+        name: OG-Injector-Sharp ${{ matrix.release }} x86
+        path: OG-Injector-Sharp/bin/Release/net5.0/publish/OG-Injector-Sharp.exe
+
+    - name: Upload ${{ matrix.release }} x86 Portable
+      uses: actions/upload-artifact@v2
+      with:
+        name: OG-Injector-Sharp ${{ matrix.release }} Portable
+        path: OG-Injector-Sharp/bin/Release/net5.0/publish/portable/OG-Injector-Sharp.exe

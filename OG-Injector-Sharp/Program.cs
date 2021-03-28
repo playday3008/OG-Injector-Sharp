@@ -1,8 +1,4 @@
-﻿//#define OSIRIS
-//#define GOESP
-//#define BETA
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
