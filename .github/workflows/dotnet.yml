@@ -33,14 +33,14 @@ jobs:
     - name: Build x86 Portable
       run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\${{ matrix.release }} x86 Portable.pubxml"
 
-    - name: Upload x86
+    - name: Upload ${{ matrix.release }} x86
       uses: actions/upload-artifact@v2
       with:
-        name: OG-Injector-Sharp-x86
+        name: OG-Injector-Sharp ${{ matrix.release }} x86
         path: OG-Injector-Sharp/bin/Release/net5.0/publish/OG-Injector-Sharp.exe
 
-    - name: Upload x86 Portable
+    - name: Upload ${{ matrix.release }} x86 Portable
       uses: actions/upload-artifact@v2
       with:
-        name: OG-Injector-Sharp-x86-Portable
+        name: OG-Injector-Sharp ${{ matrix.release }} x86 Portable
         path: OG-Injector-Sharp/bin/Release/net5.0/publish/portable/OG-Injector-Sharp.exe
