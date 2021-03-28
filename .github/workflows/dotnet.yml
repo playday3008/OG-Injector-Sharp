@@ -2,14 +2,21 @@ name: .NET
 
 on:
   push:
-    branches: [ master ]
+    branches: [ updatable ]
   pull_request:
-    branches: [ master ]
+    branches: [ updatable ]
 
 jobs:
   build:
 
     runs-on: windows-latest
+    strategy:
+      matrix:
+        release:
+          - Osiris Release
+          - GOESP Release
+          - OsirisBETA Release
+          - GOESP BETA Release
 
     steps:
     - uses: actions/checkout@v2
@@ -21,16 +28,10 @@ jobs:
       run: dotnet restore
       
     - name: Build x86
-      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\Release x86.pubxml"
-      
-    - name: Build x64
-      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\Release x64.pubxml"
+      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\${{ matrix.cheat }} Release x86.pubxml"
       
     - name: Build x86 Portable
-      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\Release x86 Portable.pubxml"
-      
-    - name: Build x64 Portable
-      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\Release x64 Portable.pubxml"
+      run: dotnet publish OG-Injector-Sharp\OG-Injector-Sharp.csproj /p:PublishProfile="OG-Injector-Sharp\Properties\PublishProfiles\${{ matrix.cheat }} Release x86 Portable.pubxml"
 
     - name: Upload x86
       uses: actions/upload-artifact@v2
@@ -38,20 +39,8 @@ jobs:
         name: OG-Injector-Sharp-x86
         path: OG-Injector-Sharp/bin/Release/net5.0/publish/OG-Injector-Sharp.exe
 
-    - name: Upload x64
-      uses: actions/upload-artifact@v2
-      with:
-        name: OG-Injector-Sharp-x64
-        path: OG-Injector-Sharp/bin/Release/net5.0/publish/x64/OG-Injector-Sharp.exe
-
     - name: Upload x86 Portable
       uses: actions/upload-artifact@v2
       with:
         name: OG-Injector-Sharp-x86-Portable
         path: OG-Injector-Sharp/bin/Release/net5.0/publish/portable/OG-Injector-Sharp.exe
-
-    - name: Upload x64 Portable
-      uses: actions/upload-artifact@v2
-      with:
-        name: OG-Injector-Sharp-x64-Portable
-        path: OG-Injector-Sharp/bin/Release/net5.0/publish/portable/x64/OG-Injector-Sharp.exe
