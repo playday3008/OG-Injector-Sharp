@@ -161,7 +161,7 @@ namespace OGInjector
 
             if (File.Exists(libraryName))
             {
-                Color.DarkGreen();   Console.Write("DLL: ");
+                Color.DarkGreen();   Console.Write("Library: ");
                 Color.Green();       Console.Write(libraryName);
                 Color.DarkGreen();   Console.WriteLine(" found");
                 Console.ResetColor();
